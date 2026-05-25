@@ -85,6 +85,7 @@ app.get('/', (req, res) => {
 
 // Error Handling
 app.use((req, res) => {
+    console.log(`404 - Not Found: ${req.method} ${req.url}`);
     res.status(404).render('error', { message: 'Page Not Found', status: 404 });
 });
 

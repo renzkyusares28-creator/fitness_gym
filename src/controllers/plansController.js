@@ -3,7 +3,7 @@ const db = require('../config/db');
 exports.getAllPlans = async (req, res) => {
     try {
         const [plans] = await db.execute('SELECT * FROM membership_plans ORDER BY price ASC');
-        res.render('admin/plans/index', { plans });
+        res.render('admin/plans/index', { plans, page: 'plans' });
     } catch (err) {
         console.error(err);
         res.status(500).render('error', { message: 'Error fetching plans', status: 500 });

@@ -1,0 +1,89 @@
+<%- include('../../partials/header') %>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h4 class="mb-0 fw-bold">Edit Member: <%= member.full_name %></h4>
+            </div>
+            <div class="card-body p-4">
+                <form action="/members/edit/<%= member.id %>" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="old_profile_picture" value="<%= member.profile_picture %>">
+                    
+                    <h5 class="text-primary mb-3 border-bottom pb-2">Account Details</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Username</label>
+                            <input type="text" name="username" class="form-control" value="<%= member.username %>" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" value="<%= member.email %>" required>
+                        </div>
+                    </div>
+
+                    <h5 class="text-primary mb-3 border-bottom pb-2">Personal Information</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="full_name" class="form-control" value="<%= member.full_name %>" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Age</label>
+                            <input type="number" name="age" class="form-control" value="<%= member.age %>" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Gender</label>
+                            <select name="gender" class="form-select" required>
+                                <option value="Male" <%= member.gender === 'Male' ? 'selected' : '' %>>Male</option>
+                                <option value="Female" <%= member.gender === 'Female' ? 'selected' : '' %>>Female</option>
+                                <option value="Other" <%= member.gender === 'Other' ? 'selected' : '' %>>Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Contact Number</label>
+                            <input type="text" name="contact_number" class="form-control" value="<%= member.contact_number %>" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <textarea name="address" class="form-control" rows="2"><%= member.address %></textarea>
+                    </div>
+
+                    <h5 class="text-primary mb-3 border-bottom pb-2">Membership & Status</h5>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">Membership Plan</label>
+                            <select name="membership_plan_id" class="form-select" required>
+                                <% plans.forEach(plan => { %>
+                                    <option value="<%= plan.id %>" <%= member.membership_plan_id === plan.id ? 'selected' : '' %>><%= plan.name %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select" required>
+                                <option value="Active" <%= member.status === 'Active' ? 'selected' : '' %>>Active</option>
+                                <option value="Inactive" <%= member.status === 'Inactive' ? 'selected' : '' %>>Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Profile Picture</label>
+                            <input type="file" name="profile_picture" class="form-control" accept="image/*">
+                            <small class="text-muted">Leave empty to keep current photo</small>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="/members" class="btn btn-light px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">Update Member</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../../partials/footer') %>

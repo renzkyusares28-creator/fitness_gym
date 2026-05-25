@@ -1,0 +1,52 @@
+<%- include('../../partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Pending Registrations</h2>
+    <a href="/members" class="btn btn-outline-primary">
+        <i class="fas fa-users me-2"></i>View All Members
+    </a>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Registration Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (pendingUsers.length > 0) { %>
+                        <% pendingUsers.forEach(user => { %>
+                            <tr>
+                                <td class="fw-bold"><%= user.username %></td>
+                                <td><%= user.email %></td>
+                                <td><%= new Date(user.created_at).toLocaleString() %></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="/members/approve/<%= user.id %>" class="btn btn-sm btn-success">
+                                            <i class="fas fa-check me-1"></i> Approve
+                                        </a>
+                                        <a href="/members/delete-user/<%= user.id %>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to reject this registration?')">
+                                            <i class="fas fa-times me-1"></i> Reject
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">No pending registrations.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<%- include('../../partials/footer') %>

@@ -1,45 +1,76 @@
 <%- include('../partials/header') %>
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-5">
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
         <div class="card shadow-sm border-0">
             <div class="card-body p-4">
                 <div class="text-center mb-4">
                     <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
-                    <h2 class="fw-bold">Create Account</h2>
-                    <p class="text-muted">Join the Fitness Gym today</p>
+                    <h2 class="fw-bold">Create Member Account</h2>
+                    <p class="text-muted">Join the Fitness Gym today. Your account will be active after Admin approval.</p>
                 </div>
                 <form action="/auth/signup" method="POST">
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-user"></i></span>
-                            <input type="text" class="form-control" id="username" name="username" required placeholder="Choose a username">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="text-primary mb-3 border-bottom pb-2">Account Details</h5>
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="text-primary mb-3 border-bottom pb-2">Personal Details</h5>
+                            <div class="mb-3">
+                                <label for="full_name" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="full_name" name="full_name" required>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="age" class="form-label">Age</label>
+                                    <input type="number" class="form-control" id="age" name="age" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="gender" class="form-label">Gender</label>
+                                    <select name="gender" class="form-select" required>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="contact_number" class="form-label">Contact Number</label>
+                                <input type="text" class="form-control" id="contact_number" name="contact_number" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="membership_plan_id" class="form-label">Choose Plan</label>
+                                <select name="membership_plan_id" class="form-select" required>
+                                    <option value="">Select a plan</option>
+                                    <% plans.forEach(plan => { %>
+                                        <option value="<%= plan.id %>"><%= plan.name %> - ₱<%= plan.price %></option>
+                                    <% }) %>
+                                </select>
+                            </div>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email Address</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                            <input type="email" class="form-control" id="email" name="email" required placeholder="name@example.com">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                            <input type="password" class="form-control" id="password" name="password" required placeholder="Create a password">
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <label for="confirmPassword" class="form-label">Confirm Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-check-double"></i></span>
-                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required placeholder="Repeat password">
-                        </div>
+                    <div class="mb-3 mt-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea name="address" class="form-control" rows="2" required></textarea>
                     </div>
                     <div class="d-grid mb-3">
-                        <button type="submit" class="btn btn-primary py-2 fw-bold">Sign Up</button>
+                        <button type="submit" class="btn btn-primary py-2 fw-bold">Submit Registration</button>
                     </div>
                     <div class="text-center">
                         <p class="mb-0 text-muted">Already have an account? <a href="/auth/login" class="text-primary fw-bold text-decoration-none">Login</a></p>

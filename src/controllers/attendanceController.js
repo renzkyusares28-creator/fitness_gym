@@ -17,7 +17,7 @@ exports.getAttendanceHistory = async (req, res) => {
         query += ' ORDER BY a.check_in_time DESC';
 
         const [attendance] = await db.execute(query, params);
-        res.render('attendance/index', { attendance });
+        res.render('attendance/index', { attendance, page: 'attendance' });
     } catch (err) {
         console.error(err);
         res.status(500).render('error', { message: 'Error fetching attendance', status: 500 });
@@ -25,7 +25,7 @@ exports.getAttendanceHistory = async (req, res) => {
 };
 
 exports.renderScanner = (req, res) => {
-    res.render('attendance/scanner');
+    res.render('attendance/scanner', { page: 'attendance' });
 };
 
 exports.recordAttendance = async (req, res) => {

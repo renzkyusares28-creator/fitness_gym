@@ -1,36 +1,43 @@
 <%- include('partials/header') %>
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-8 text-center">
-        <h1 class="display-4 fw-bold mb-4">Welcome to Fitness Gym</h1>
-        <p class="lead mb-5">Manage your members, trainers, and gym operations efficiently with our all-in-one management system.</p>
-        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
-            <a href="/auth/login" class="btn btn-primary btn-lg px-4 gap-3">Login to Dashboard</a>
-            <a href="/auth/signup" class="btn btn-outline-primary btn-lg px-4">Sign Up Now</a>
+<div class="hero-section py-5 mb-5 bg-dark text-white rounded-4 shadow-lg overflow-hidden position-relative" style="min-height: 400px; display: flex; align-items: center;">
+    <div class="bg-gradient-overlay"></div>
+    <div class="container py-5 position-relative text-center" style="z-index: 2;">
+        <h1 class="display-3 fw-bold mb-3 mt-4">Elevate Your Fitness Journey</h1>
+        <p class="fs-4 mb-5 opacity-75 mx-auto" style="max-width: 700px;">The ultimate management solution for modern fitness centers. Streamline operations and focus on results.</p>
+        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center mb-4">
+            <a href="/auth/login" class="btn btn-primary btn-lg px-5 py-3 fw-bold shadow">Go to Dashboard</a>
+            <a href="/auth/signup" class="btn btn-outline-light btn-lg px-5 py-3 fw-bold">Sign Up Now</a>
         </div>
     </div>
 </div>
 
-<div class="row mt-5 pt-5">
+<div class="row g-4 py-5">
     <div class="col-md-4 text-center">
-        <div class="p-3">
-            <i class="fas fa-qrcode fa-3x text-primary mb-3"></i>
-            <h3>QR Attendance</h3>
-            <p>Automated attendance tracking using unique QR codes for every member.</p>
+        <div class="p-4 card h-100 border-0 shadow-sm hover-lift">
+            <div class="icon-square bg-primary text-white d-inline-flex align-items-center justify-content-center fs-2 mb-3 rounded-3 mx-auto shadow-sm" style="width: 70px; height: 70px;">
+                <i class="fas fa-qrcode"></i>
+            </div>
+            <h3 class="fw-bold h4">QR Attendance</h3>
+            <p class="text-muted">Automated attendance tracking using unique QR codes for every member, ensuring accuracy and speed.</p>
         </div>
     </div>
     <div class="col-md-4 text-center">
-        <div class="p-3">
-            <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
-            <h3>Real-time Analytics</h3>
-            <p>Monitor membership statistics, payments, and income with modern charts.</p>
+        <div class="p-4 card h-100 border-0 shadow-sm hover-lift">
+            <div class="icon-square bg-success text-white d-inline-flex align-items-center justify-content-center fs-2 mb-3 rounded-3 mx-auto shadow-sm" style="width: 70px; height: 70px;">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3 class="fw-bold h4">Real-time Analytics</h3>
+            <p class="text-muted">Monitor membership growth, payment trends, and gym performance with intuitive data visualizations.</p>
         </div>
     </div>
     <div class="col-md-4 text-center">
-        <div class="p-3">
-            <i class="fas fa-calendar-alt fa-3x text-primary mb-3"></i>
-            <h3>Trainer Scheduling</h3>
-            <p>Efficiently manage trainer schedules and workout programs for members.</p>
+        <div class="p-4 card h-100 border-0 shadow-sm hover-lift">
+            <div class="icon-square bg-info text-white d-inline-flex align-items-center justify-content-center fs-2 mb-3 rounded-3 mx-auto shadow-sm" style="width: 70px; height: 70px;">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <h3 class="fw-bold h4">Trainer Scheduling</h3>
+            <p class="text-muted">Efficiently manage session timings, personal training schedules, and personalized workout programs.</p>
         </div>
     </div>
 </div>

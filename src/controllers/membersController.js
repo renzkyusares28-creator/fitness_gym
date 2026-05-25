@@ -13,7 +13,7 @@ exports.getAllMembers = async (req, res) => {
             LEFT JOIN membership_plans p ON m.membership_plan_id = p.id
             ORDER BY m.id DESC
         `);
-        res.render('admin/members/index', { members });
+        res.render('admin/members/index', { members, page: 'members' });
     } catch (err) {
         console.error(err);
         res.status(500).render('error', { message: 'Error fetching members', status: 500 });
@@ -23,7 +23,7 @@ exports.getAllMembers = async (req, res) => {
 exports.renderAddMember = async (req, res) => {
     try {
         const [plans] = await db.execute('SELECT * FROM membership_plans');
-        res.render('admin/members/add', { plans });
+        res.render('admin/members/add', { plans, page: 'members' });
     } catch (err) {
         console.error(err);
         res.status(500).render('error', { message: 'Error loading add member page', status: 500 });
@@ -41,7 +41,7 @@ exports.addMember = async (req, res) => {
         // 1. Create User
         const hashedPassword = await bcrypt.hash(password, 10);
         const [userResult] = await connection.execute(
-            "INSERT INTO users (username, email, password, role_id) VALUES (?, ?, ?, (SELECT id FROM roles WHERE name = 'Member'))",
+            "INSERT INTO users (username, email, password, role_id, is_approved) VALUES (?, ?, ?, (SELECT id FROM roles WHERE name = 'Member'), 1)",
             [username, email, hashedPassword]
         );
         const userId = userResult.insertId;
@@ -79,16 +79,165 @@ exports.addMember = async (req, res) => {
 
 exports.deleteMember = async (req, res) => {
     const { id } = req.params;
+    const connection = await db.getConnection();
     try {
-        const [member] = await db.execute('SELECT user_id FROM members WHERE id = ?', [id]);
-        if (member.length > 0) {
-            await db.execute('DELETE FROM users WHERE id = ?', [member[0].user_id]);
+        await connection.beginTransaction();
+
+        // 1. Get user_id first
+        const [member] = await connection.execute('SELECT user_id FROM members WHERE id = ?', [id]);
+        if (member.length === 0) {
+            await connection.rollback();
+            req.session.error = "Member not found";
+            return res.redirect('/members');
         }
-        req.session.success = "Member deleted successfully!";
+        const userId = member[0].user_id;
+
+        // 2. Delete all dependent records
+        await connection.execute('DELETE FROM attendances WHERE member_id = ?', [id]);
+        await connection.execute('DELETE FROM payments WHERE member_id = ?', [id]);
+        await connection.execute('DELETE FROM trainer_schedules WHERE member_id = ?', [id]);
+        await connection.execute('DELETE FROM workout_programs WHERE member_id = ?', [id]);
+        await connection.execute('DELETE FROM qr_codes WHERE member_id = ?', [id]);
+
+        // 3. Delete User (cascades to members table)
+        await connection.execute('DELETE FROM users WHERE id = ?', [userId]);
+
+        await connection.commit();
+        req.session.success = "Member and all associated data deleted successfully!";
         res.redirect('/members');
+
     } catch (err) {
-        console.error(err);
-        req.session.error = "Error deleting member";
+        await connection.rollback();
+        console.error('Delete Member Error:', err.message);
+        req.session.error = "Error deleting member: " + err.message;
         res.redirect('/members');
+    } finally {
+        connection.release();
     }
 };
+
+exports.renderEditMember = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [member] = await db.execute(`
+            SELECT m.*, u.username, u.email 
+            FROM members m 
+            JOIN users u ON m.user_id = u.id 
+            WHERE m.id = ?
+        `, [id]);
+
+        if (member.length === 0) {
+            req.session.error = "Member not found";
+            return res.redirect('/members');
+        }
+
+        const [plans] = await db.execute('SELECT * FROM membership_plans');
+        res.render('admin/members/edit', { member: member[0], plans });
+    } catch (err) {
+        console.error(err);
+        res.status(500).render('error', { message: 'Error loading edit page', status: 500 });
+    }
+};
+
+exports.updateMember = async (req, res) => {
+    const { id } = req.params;
+    const { username, email, full_name, age, gender, address, contact_number, membership_plan_id, status } = req.body;
+    const profile_picture = req.file ? `/uploads/${req.file.filename}` : req.body.old_profile_picture;
+
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        // Get user_id first
+        const [member] = await connection.execute('SELECT user_id FROM members WHERE id = ?', [id]);
+        const userId = member[0].user_id;
+
+        // 1. Update User
+        await connection.execute(
+            'UPDATE users SET username = ?, email = ? WHERE id = ?',
+            [username, email, userId]
+        );
+
+        // 2. Update Member
+        await connection.execute(
+            `UPDATE members SET full_name = ?, age = ?, gender = ?, address = ?, contact_number = ?, profile_picture = ?, membership_plan_id = ?, status = ? 
+             WHERE id = ?`,
+            [full_name, age, gender, address, contact_number, profile_picture, membership_plan_id, status, id]
+        );
+
+        await connection.commit();
+        req.session.success = "Member updated successfully!";
+        res.redirect('/members');
+
+    } catch (err) {
+        await connection.rollback();
+        console.error(err);
+        req.session.error = "Error updating member: " + err.message;
+        res.redirect(`/members/edit/${id}`);
+    } finally {
+        connection.release();
+    }
+};
+
+exports.getPendingMembers = async (req, res) => {
+    try {
+        const [pendingUsers] = await db.execute(`
+            SELECT id, username, email, created_at 
+            FROM users 
+            WHERE is_approved = 0 
+            ORDER BY created_at DESC
+        `);
+        res.render('admin/members/pending', { pendingUsers, page: 'members' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).render('error', { message: 'Error fetching pending members', status: 500 });
+    }
+};
+
+exports.approveMember = async (req, res) => {
+    const { id } = req.params;
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        // 1. Approve User
+        await connection.execute('UPDATE users SET is_approved = 1 WHERE id = ?', [id]);
+
+        // 2. Activate Member and set expiry date based on plan
+        const [member] = await connection.execute('SELECT m.id, p.duration_months FROM members m JOIN membership_plans p ON m.membership_plan_id = p.id WHERE m.user_id = ?', [id]);
+        
+        if (member.length > 0) {
+            const { id: memberId, duration_months } = member[0];
+            await connection.execute(
+                "UPDATE members SET status = 'Active', membership_expiry_date = DATE_ADD(CURRENT_DATE(), INTERVAL ? MONTH) WHERE id = ?",
+                [duration_months, memberId]
+            );
+        }
+
+        await connection.commit();
+        req.session.success = "User approved and membership activated!";
+        res.redirect('/members/pending');
+    } catch (err) {
+        await connection.rollback();
+        console.error(err);
+        req.session.error = "Error approving user: " + err.message;
+        res.redirect('/members/pending');
+    } finally {
+        connection.release();
+    }
+};
+
+exports.rejectMember = async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.execute('DELETE FROM users WHERE id = ?', [id]);
+        req.session.success = "Registration rejected and user deleted.";
+        res.redirect('/members/pending');
+    } catch (err) {
+        console.error(err);
+        req.session.error = "Error rejecting user";
+        res.redirect('/members/pending');
+    }
+};
+
+

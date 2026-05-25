@@ -41,19 +41,31 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                resultDiv.innerHTML = `<div class="alert alert-success">
-                    <i class="fas fa-check-circle me-2"></i>${data.message}
+                resultDiv.innerHTML = `<div class="alert alert-success shadow-sm border-0">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-circle fa-2x me-3"></i>
+                        <div>
+                            <h5 class="alert-heading mb-1 fw-bold">Check-in Successful!</h5>
+                            <p class="mb-0">${data.message}</p>
+                        </div>
+                    </div>
                 </div>
-                <button onclick="location.reload()" class="btn btn-primary w-100">Scan Next</button>`;
+                <button onclick="location.reload()" class="btn btn-primary w-100 py-2 fw-bold mt-2">Scan Next Member</button>`;
                 
                 // Play success sound
                 const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
                 audio.play();
             } else {
-                resultDiv.innerHTML = `<div class="alert alert-danger">
-                    <i class="fas fa-exclamation-triangle me-2"></i>${data.message}
+                resultDiv.innerHTML = `<div class="alert alert-danger shadow-sm border-0">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                        <div>
+                            <h5 class="alert-heading mb-1 fw-bold">Scan Failed</h5>
+                            <p class="mb-0">${data.message}</p>
+                        </div>
+                    </div>
                 </div>
-                <button onclick="location.reload()" class="btn btn-secondary w-100">Try Again</button>`;
+                <button onclick="location.reload()" class="btn btn-secondary w-100 py-2 fw-bold mt-2">Try Again</button>`;
             }
         })
         .catch(error => {

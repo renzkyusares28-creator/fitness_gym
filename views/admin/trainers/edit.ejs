@@ -1,0 +1,51 @@
+<%- include('../../partials/header') %>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h4 class="mb-0 fw-bold">Edit Trainer: <%= trainer.full_name %></h4>
+            </div>
+            <div class="card-body p-4">
+                <form action="/trainers/edit/<%= trainer.id %>" method="POST">
+                    <h5 class="text-primary mb-3 border-bottom pb-2">Account Details</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Username</label>
+                            <input type="text" name="username" class="form-control" value="<%= trainer.username %>" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" value="<%= trainer.email %>" required>
+                        </div>
+                    </div>
+
+                    <h5 class="text-primary mb-3 border-bottom pb-2">Professional Information</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="full_name" class="form-control" value="<%= trainer.full_name %>" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Specialization</label>
+                            <input type="text" name="specialization" class="form-control" value="<%= trainer.specialization %>" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Contact Number</label>
+                            <input type="text" name="contact_number" class="form-control" value="<%= trainer.contact_number %>" required>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="/trainers" class="btn btn-light px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">Update Trainer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../../partials/footer') %>

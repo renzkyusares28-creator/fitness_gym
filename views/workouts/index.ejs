@@ -43,4 +43,63 @@
     <% } %>
 </div>
 
+<% if (user.role === 'Admin' || user.role === 'Trainer') { %>
+<!-- Add Workout Modal -->
+<div class="modal fade" id="addWorkoutModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Assign Workout Program</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="/workouts/add" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Select Member</label>
+                        <select name="member_id" class="form-select" required>
+                            <option value="">-- Select Member --</option>
+                            <% members.forEach(member => { %>
+                                <option value="<%= member.id %>"><%= member.full_name %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <% if (user.role === 'Admin') { %>
+                    <div class="mb-3">
+                        <label class="form-label">Assign Trainer</label>
+                        <select name="assigned_by" class="form-select">
+                            <option value="">-- System / No Trainer --</option>
+                            <% trainers.forEach(trainer => { %>
+                                <option value="<%= trainer.id %>"><%= trainer.full_name %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <% } %>
+                    <div class="mb-3">
+                        <label class="form-label">Program Name</label>
+                        <input type="text" name="program_name" class="form-control" placeholder="e.g. Morning Cardio" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Category</label>
+                        <select name="category" class="form-select" required>
+                            <option value="Weight Loss">Weight Loss</option>
+                            <option value="Muscle Gain">Muscle Gain</option>
+                            <option value="Cardio">Cardio</option>
+                            <option value="Strength Training">Strength Training</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description / Exercises</label>
+                        <textarea name="description" class="form-control" rows="4" placeholder="List exercises and sets..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Assign Program</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<% } %>
+
 <%- include('../partials/footer') %>

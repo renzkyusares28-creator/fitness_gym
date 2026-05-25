@@ -56,7 +56,7 @@ async function seed() {
         
         if (existingAdmin.length === 0) {
             await db.execute(
-                "INSERT INTO users (username, email, password, role_id) VALUES (?, ?, ?, (SELECT id FROM roles WHERE name = 'Admin'))",
+                "INSERT INTO users (username, email, password, role_id, is_approved) VALUES (?, ?, ?, (SELECT id FROM roles WHERE name = 'Admin'), 1)",
                 [adminUsername, adminEmail, hashedPassword]
             );
             console.log('✅ Default admin created:');

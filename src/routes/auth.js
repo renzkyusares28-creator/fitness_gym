@@ -2,48 +2,77 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
+const qrcode = require('qrcode');
 
 // Signup Page
-router.get('/signup', (req, res) => {
+router.get('/signup', async (req, res) => {
     if (req.session.user) return res.redirect('/dashboard');
-    res.render('auth/signup');
+    try {
+        const [plans] = await db.execute('SELECT * FROM membership_plans');
+        res.render('auth/signup', { plans });
+    } catch (err) {
+        console.error(err);
+        res.render('auth/signup', { plans: [] });
+    }
 });
 
 // Signup Logic
 router.post('/signup', async (req, res) => {
-    const { username, email, password, confirmPassword } = req.body;
+    const { username, email, password, confirmPassword, full_name, age, gender, address, contact_number, membership_plan_id } = req.body;
 
     if (password !== confirmPassword) {
         req.session.error = "Passwords do not match";
         return res.redirect('/auth/signup');
     }
 
+    const connection = await db.getConnection();
     try {
-        // Check if user exists
-        const [existing] = await db.execute('SELECT id FROM users WHERE username = ? OR email = ?', [username, email]);
+        await connection.beginTransaction();
+
+        // 1. Check if user exists
+        const [existing] = await connection.execute('SELECT id FROM users WHERE username = ? OR email = ?', [username, email]);
         if (existing.length > 0) {
             req.session.error = "Username or Email already exists";
+            await connection.rollback();
             return res.redirect('/auth/signup');
         }
 
+        // 2. Create User (Pending Approval)
         const hashedPassword = await bcrypt.hash(password, 10);
-        
-        // Default role is Member
-        const [role] = await db.execute("SELECT id FROM roles WHERE name = 'Member'");
+        const [role] = await connection.execute("SELECT id FROM roles WHERE name = 'Member'");
         const roleId = role[0].id;
 
-        await db.execute(
-            'INSERT INTO users (username, email, password, role_id) VALUES (?, ?, ?, ?)',
+        const [userResult] = await connection.execute(
+            'INSERT INTO users (username, email, password, role_id, is_approved) VALUES (?, ?, ?, ?, 0)',
             [username, email, hashedPassword, roleId]
         );
+        const userId = userResult.insertId;
 
-        req.session.success = "Account created! You can now login.";
+        // 3. Generate QR Code Data (Base64)
+        const qrCodeData = `GYM-MEMBER-${userId}-${Date.now()}`;
+        const qrCodeImageUrl = await qrcode.toDataURL(qrCodeData);
+
+        // 4. Create Member Profile
+        const registrationDate = new Date().toISOString().split('T')[0];
+        
+        // Expiry will be set upon approval/payment, initially set to current date
+        await connection.execute(
+            `INSERT INTO members (user_id, full_name, age, gender, address, contact_number, membership_plan_id, qr_code_data, registration_date, status) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Inactive')`,
+            [userId, full_name, age, gender, address, contact_number, membership_plan_id, qrCodeImageUrl, registrationDate]
+        );
+
+        await connection.commit();
+        req.session.success = "Registration submitted! Please wait for Admin approval before logging in.";
         res.redirect('/auth/login');
 
     } catch (err) {
+        await connection.rollback();
         console.error(err);
-        req.session.error = "An error occurred during signup";
+        req.session.error = "An error occurred during signup: " + err.message;
         res.redirect('/auth/signup');
+    } finally {
+        connection.release();
     }
 });
 
@@ -69,6 +98,12 @@ router.post('/login', async (req, res) => {
         }
 
         const user = users[0];
+
+        if (!user.is_approved) {
+            req.session.error = "Your account is pending approval from the Admin. Please try again later.";
+            return res.redirect('/auth/login');
+        }
+
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {

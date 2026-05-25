@@ -19,7 +19,18 @@ exports.getWorkouts = async (req, res) => {
         }
 
         const [workouts] = await db.execute(query, params);
-        res.render('workouts/index', { workouts });
+
+        let members = [];
+        let trainers = [];
+        if (req.session.user.role !== 'Member') {
+            const [memberData] = await db.execute("SELECT id, full_name FROM members WHERE status = 'Active'");
+            members = memberData;
+            
+            const [trainerData] = await db.execute("SELECT id, full_name FROM trainers");
+            trainers = trainerData;
+        }
+
+        res.render('workouts/index', { workouts, members, trainers, page: 'workouts' });
     } catch (err) {
         console.error(err);
         res.status(500).render('error', { message: 'Error fetching workouts', status: 500 });
@@ -27,12 +38,13 @@ exports.getWorkouts = async (req, res) => {
 };
 
 exports.addWorkout = async (req, res) => {
-    const { member_id, program_name, category, description } = req.body;
+    const { member_id, program_name, category, description, assigned_by } = req.body;
     
     try {
-        // Get trainer id if current user is a trainer
-        let trainerId = null;
-        if (req.session.user.role === 'Trainer') {
+        let trainerId = assigned_by || null;
+
+        // If current user is a trainer and no trainer was selected in the form, use the current user's trainer id
+        if (req.session.user.role === 'Trainer' && !trainerId) {
             const [trainer] = await db.execute('SELECT id FROM trainers WHERE user_id = ?', [req.session.user.id]);
             trainerId = trainer[0]?.id;
         }

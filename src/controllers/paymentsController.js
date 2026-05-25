@@ -9,7 +9,7 @@ exports.getAllPayments = async (req, res) => {
             JOIN membership_plans pl ON p.plan_id = pl.id
             ORDER BY p.payment_date DESC
         `);
-        res.render('admin/payments/index', { payments });
+        res.render('admin/payments/index', { payments, page: 'payments' });
     } catch (err) {
         console.error(err);
         res.status(500).render('error', { message: 'Error fetching payments', status: 500 });
@@ -20,7 +20,7 @@ exports.renderAddPayment = async (req, res) => {
     try {
         const [members] = await db.execute('SELECT id, full_name FROM members');
         const [plans] = await db.execute('SELECT id, name, price FROM membership_plans');
-        res.render('admin/payments/add', { members, plans });
+        res.render('admin/payments/add', { members, plans, page: 'payments' });
     } catch (err) {
         console.error(err);
         res.status(500).render('error', { message: 'Error loading payment page', status: 500 });

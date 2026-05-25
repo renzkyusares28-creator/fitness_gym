@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,68 +11,99 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="bg-light">
-    <% if (user) { %>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm sticky-top">
-        <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="/dashboard">
-                <i class="fas fa-dumbbell me-2"></i>FITNESS GYM
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/dashboard">Dashboard</a>
-                    </li>
-                    <% if (user.role === 'Admin') { %>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/members">Members</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/trainers">Trainers</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/plans">Plans</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/payments">Payments</a>
-                    </li>
-                    <% } %>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/attendance">Attendance</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/workouts">Workouts</a>
-                    </li>
-                    <% if (user.role === 'Admin') { %>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/reports">Reports</a>
-                    </li>
-                    <% } %>
-                </ul>
-                <div class="d-flex align-items-center">
-                    <span class="text-light me-3">
-                        <i class="fas fa-user-circle me-1"></i><%= user.username %> (<%= user.role %>)
-                    </span>
-                    <a href="/auth/logout" class="btn btn-outline-danger btn-sm">Logout</a>
-                </div>
+<body>
+    <div class="wrapper">
+        <% if (user) { %>
+        <!-- Sidebar -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h4 class="fw-bold mb-0 text-white">
+                    <i class="fas fa-dumbbell me-2"></i>FITNESS GYM
+                </h4>
             </div>
-        </div>
-    </nav>
-    <% } %>
 
-    <div class="container mt-4">
-        <% if (success) { %>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <%= success %>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <ul class="list-unstyled components">
+                <li class="<%= (typeof page !== 'undefined' && page === 'dashboard') ? 'active' : '' %>">
+                    <a href="/dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
+                </li>
+                <% if (user.role === 'Admin') { %>
+                <li class="<%= (typeof page !== 'undefined' && page === 'members') ? 'active' : '' %>">
+                    <a href="/members"><i class="fas fa-users"></i> Members</a>
+                </li>
+                <li class="<%= (typeof page !== 'undefined' && page === 'trainers') ? 'active' : '' %>">
+                    <a href="/trainers"><i class="fas fa-user-tie"></i> Trainers</a>
+                </li>
+                <li class="<%= (typeof page !== 'undefined' && page === 'plans') ? 'active' : '' %>">
+                    <a href="/plans"><i class="fas fa-tags"></i> Membership Plans</a>
+                </li>
+                <li class="<%= (typeof page !== 'undefined' && page === 'payments') ? 'active' : '' %>">
+                    <a href="/payments"><i class="fas fa-money-bill-wave"></i> Payments</a>
+                </li>
+                <% } %>
+                <li class="<%= (typeof page !== 'undefined' && page === 'attendance') ? 'active' : '' %>">
+                    <a href="/attendance"><i class="fas fa-calendar-check"></i> Attendance</a>
+                </li>
+                <li class="<%= (typeof page !== 'undefined' && page === 'workouts') ? 'active' : '' %>">
+                    <a href="/workouts"><i class="fas fa-dumbbell"></i> Workout Programs</a>
+                </li>
+                <% if (user.role === 'Admin') { %>
+                <li class="<%= (typeof page !== 'undefined' && page === 'reports') ? 'active' : '' %>">
+                    <a href="/reports"><i class="fas fa-chart-bar"></i> Reports & Analytics</a>
+                </li>
+                <% } %>
+            </ul>
+
+            <div class="sidebar-footer p-3 mt-auto border-top border-secondary">
+                <a href="/auth/logout" class="btn btn-outline-danger w-100 btn-sm">
+                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                </a>
             </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            <!-- Top Navbar -->
+            <nav class="navbar navbar-expand-lg top-navbar">
+                <div class="container-fluid">
+                    <button type="button" id="sidebarCollapse" class="btn btn-light">
+                        <i class="fas fa-align-left"></i>
+                    </button>
+                    
+                    <div class="ms-auto d-flex align-items-center">
+                        <!-- Dark Mode Toggle -->
+                        <button class="btn btn-link text-dark me-3" id="darkModeToggle" title="Toggle Dark Mode">
+                            <i class="fas fa-moon" id="darkModeIcon"></i>
+                        </button>
+                        
+                        <div class="dropdown">
+                            <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle fa-lg me-2"></i>
+                                <span><%= user.username %> (<%= user.role %>)</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                <li><a class="dropdown-item" href="/dashboard"><i class="fas fa-id-card me-2"></i> Dashboard</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/auth/logout"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        <% } else { %>
+        <!-- No Sidebar for guest users (Login/Signup) -->
+        <div id="content" style="width: 100%; margin-left: 0;">
         <% } %>
-        <% if (error) { %>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <%= error %>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        <% } %>
+
+        <div class="container-fluid">
+            <% if (success) { %>
+                <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert">
+                    <i class="fas fa-check-circle me-2"></i><%= success %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <% } %>
+            <% if (error) { %>
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i><%= error %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <% } %>

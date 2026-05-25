@@ -3,70 +3,170 @@
 <div class="row mb-4">
     <div class="col">
         <h2 class="fw-bold">Member Dashboard</h2>
-        <p class="text-muted">Welcome to your fitness journey!</p>
+        <p class="text-muted">Welcome back, <%= memberData?.full_name || user.username %>!</p>
     </div>
 </div>
 
 <div class="row g-4 mb-4">
+    <!-- Profile Card -->
     <div class="col-md-4">
         <div class="card h-100 shadow-sm border-0">
             <div class="card-body text-center">
                 <div class="mb-3">
-                    <img src="<%= memberData?.profile_picture || 'https://via.placeholder.com/150' %>" alt="Profile" class="rounded-circle img-thumbnail" style="width: 120px; height: 120px; object-fit: cover;">
+                    <img src="<%= memberData?.profile_picture || 'https://via.placeholder.com/150' %>" alt="Profile" class="rounded-circle img-thumbnail shadow-sm" style="width: 120px; height: 120px; object-fit: cover;">
                 </div>
-                <h4 class="fw-bold"><%= memberData?.full_name || user.username %></h4>
-                <p class="text-muted"><%= memberData?.plan_name || 'No Plan' %></p>
-                <div class="badge bg-<%= memberData?.status === 'Active' ? 'success' : 'danger' %> px-3 py-2">
+                <h4 class="fw-bold mb-1"><%= memberData?.full_name || user.username %></h4>
+                <p class="text-muted mb-3"><%= memberData?.plan_name || 'No Active Plan' %></p>
+                <div class="badge bg-<%= memberData?.status === 'Active' ? 'success' : 'danger' %> px-3 py-2 rounded-pill">
                     <%= memberData?.status || 'Inactive' %>
+                </div>
+                <hr>
+                <div class="text-start small">
+                    <p class="mb-1"><strong><i class="fas fa-envelope me-2"></i>Email:</strong> <%= user.email %></p>
+                    <p class="mb-1"><strong><i class="fas fa-phone me-2"></i>Contact:</strong> <%= memberData?.contact_number || 'N/A' %></p>
+                    <p class="mb-0"><strong><i class="fas fa-calendar-alt me-2"></i>Joined:</strong> <%= memberData?.registration_date ? new Date(memberData.registration_date).toLocaleDateString() : 'N/A' %></p>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Stats & Quick View -->
     <div class="col-md-8">
         <div class="row g-4 mb-4">
             <div class="col-md-6">
-                <div class="card bg-info text-white shadow-sm border-0">
-                    <div class="card-body">
-                        <h6 class="text-uppercase mb-1">Total Attendances</h6>
-                        <h2 class="mb-0 fw-bold"><%= stats.attendanceCount %></h2>
+                <div class="card bg-primary text-white shadow-sm border-0">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase small mb-1 opacity-75">Total Attendances</h6>
+                            <h2 class="mb-0 fw-bold"><%= stats.attendanceCount %></h2>
+                        </div>
+                        <i class="fas fa-calendar-check fa-3x opacity-25"></i>
                     </div>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="card bg-warning text-dark shadow-sm border-0">
-                    <div class="card-body">
-                        <h6 class="text-uppercase mb-1">Membership Expiry</h6>
-                        <h2 class="mb-0 fw-bold"><%= stats.expiryDate === 'N/A' ? 'N/A' : new Date(stats.expiryDate).toLocaleDateString() %></h2>
+                    <div class="card-body d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="text-uppercase small mb-1 opacity-75">Membership Expiry</h6>
+                            <h2 class="mb-0 fw-bold"><%= stats.expiryDate === 'N/A' ? 'N/A' : new Date(stats.expiryDate).toLocaleDateString() %></h2>
+                        </div>
+                        <i class="fas fa-hourglass-end fa-3x opacity-25"></i>
                     </div>
                 </div>
             </div>
         </div>
         
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold">My Workout Program</h5>
-                <a href="/workouts" class="btn btn-sm btn-outline-primary">View All</a>
+        <div class="row g-4">
+            <!-- Upcoming Sessions -->
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold"><i class="fas fa-clock me-2 text-primary"></i>Upcoming Sessions</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <% if (schedules && schedules.length > 0) { %>
+                                <% schedules.forEach(s => { %>
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="fw-bold small text-primary"><%= new Date(s.schedule_date).toLocaleDateString() %></span>
+                                            <span class="small text-muted"><%= s.start_time %></span>
+                                        </div>
+                                        <div class="small mt-1">Trainer: <strong><%= s.trainer_name %></strong></div>
+                                        <div class="badge bg-light text-dark extra-small mt-1"><%= s.session_type %></div>
+                                    </div>
+                                <% }) %>
+                            <% } else { %>
+                                <div class="p-4 text-center text-muted small">No upcoming sessions.</div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <p class="text-muted">No workout program assigned yet. Contact your trainer!</p>
+
+            <!-- Recent Workouts -->
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold"><i class="fas fa-dumbbell me-2 text-success"></i>My Workout Programs</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <% if (workouts && workouts.length > 0) { %>
+                                <% workouts.forEach(w => { %>
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="fw-bold small"><%= w.program_name %></span>
+                                            <span class="badge bg-light text-primary extra-small"><%= w.category %></span>
+                                        </div>
+                                        <p class="text-muted extra-small mb-0 text-truncate mt-1"><%= w.description %></p>
+                                    </div>
+                                <% }) %>
+                            <% } else { %>
+                                <div class="p-4 text-center text-muted small">No workout programs assigned.</div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-6">
+<div class="row g-4">
+    <!-- QR Code Section -->
+    <div class="col-md-4">
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white py-3">
-                <h5 class="mb-0 fw-bold">My QR Code</h5>
+                <h6 class="mb-0 fw-bold"><i class="fas fa-qrcode me-2 text-dark"></i>My QR Code</h6>
             </div>
             <div class="card-body text-center">
                 <% if (memberData?.qr_code_data) { %>
-                    <img src="<%= memberData.qr_code_data %>" alt="QR Code" class="img-fluid mb-3" style="max-width: 200px;">
-                    <p class="small text-muted">Show this QR code at the counter for attendance.</p>
+                    <div class="bg-light p-3 rounded mb-3 d-inline-block">
+                        <img src="<%= memberData.qr_code_data %>" alt="QR Code" class="img-fluid" style="max-width: 180px;">
+                    </div>
+                    <p class="small text-muted mb-0">Present this QR code at the counter for easy attendance check-in.</p>
                 <% } else { %>
-                    <p class="text-muted">QR Code not generated yet.</p>
+                    <div class="alert alert-warning small mb-0">QR Code not generated. Please contact support.</div>
                 <% } %>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Attendance -->
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h6 class="mb-0 fw-bold"><i class="fas fa-history me-2 text-info"></i>Recent Attendance History</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (recentAttendance && recentAttendance.length > 0) { %>
+                                <% recentAttendance.forEach(att => { %>
+                                    <tr>
+                                        <td><%= new Date(att.check_in_time).toLocaleDateString() %></td>
+                                        <td><%= new Date(att.check_in_time).toLocaleTimeString() %></td>
+                                        <td><span class="badge bg-success-subtle text-success">Present</span></td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="3" class="text-center py-4 text-muted">No attendance records found.</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

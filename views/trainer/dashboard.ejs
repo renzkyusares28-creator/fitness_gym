@@ -7,29 +7,58 @@
     </div>
 </div>
 
+<% if (upcomingSessions.length > 0) { %>
+    <div class="alert alert-info alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-bell fa-2x me-3 text-primary"></i>
+            <div>
+                <h5 class="alert-heading mb-1 fw-bold">Upcoming Sessions Tomorrow!</h5>
+                <p class="mb-0">You have <strong><%= upcomingSessions.length %></strong> session(s) scheduled for tomorrow. <a href="/trainers/schedules" class="alert-link">View full schedule</a></p>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>
+
 <div class="row g-4 mb-4">
-    <div class="col-md-6">
-        <div class="card bg-primary text-white h-100 shadow-sm border-0">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white h-100 shadow-sm border-0 hover-lift">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="text-uppercase mb-1">Assigned Members</h6>
-                        <h2 class="mb-0 fw-bold"><%= stats.assignedMembers %></h2>
+                        <h2 class="mb-0 fw-bold"><%= stats.assignedMembersCount %></h2>
                     </div>
                     <i class="fas fa-users fa-3x opacity-50"></i>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card bg-success text-white h-100 shadow-sm border-0">
+    <div class="col-md-4">
+        <div class="card bg-success text-white h-100 shadow-sm border-0 hover-lift">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="text-uppercase mb-1">Sessions Today</h6>
-                        <h2 class="mb-0 fw-bold"><%= stats.todaySessions %></h2>
+                        <h2 class="mb-0 fw-bold"><%= stats.todaySessionsCount %></h2>
                     </div>
                     <i class="fas fa-calendar-day fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white h-100 shadow-sm border-0 hover-lift">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase mb-1">Quick Actions</h6>
+                        <div class="mt-2">
+                            <a href="/workouts" class="btn btn-sm btn-light">Assign Workout</a>
+                            <a href="/trainers/schedules" class="btn btn-sm btn-outline-light">My Schedule</a>
+                        </div>
+                    </div>
+                    <i class="fas fa-bolt fa-3x opacity-50"></i>
                 </div>
             </div>
         </div>
@@ -37,10 +66,12 @@
 </div>
 
 <div class="row">
-    <div class="col-md-12">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3">
+    <!-- Today's Schedule -->
+    <div class="col-md-7">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 class="mb-0 fw-bold">Today's Schedule</h5>
+                <span class="badge bg-primary"><%= new Date().toLocaleDateString() %></span>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -50,19 +81,101 @@
                                 <th>Time</th>
                                 <th>Member</th>
                                 <th>Session Type</th>
-                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
+                            <% if (todaySessions.length > 0) { %>
+                                <% todaySessions.forEach(session => { %>
+                                    <tr>
+                                        <td><%= session.start_time %> - <%= session.end_time %></td>
+                                        <td><%= session.member_name %></td>
+                                        <td><span class="badge bg-info text-dark"><%= session.session_type %></span></td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="3" class="text-center py-4 text-muted">No sessions scheduled for today.</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recently Assigned Workouts -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">Recently Assigned Workouts</h5>
+                <a href="/workouts" class="btn btn-sm btn-outline-primary small">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
                             <tr>
-                                <td colspan="4" class="text-center py-4 text-muted">No sessions scheduled for today.</td>
+                                <th>Member</th>
+                                <th>Program</th>
+                                <th>Category</th>
                             </tr>
+                        </thead>
+                        <tbody>
+                            <% if (recentWorkouts.length > 0) { %>
+                                <% recentWorkouts.forEach(w => { %>
+                                    <tr>
+                                        <td class="small fw-bold"><%= w.member_name %></td>
+                                        <td class="small"><%= w.program_name %></td>
+                                        <td><span class="badge bg-primary extra-small" style="font-size: 0.7rem;"><%= w.category %></span></td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="3" class="text-center py-3 text-muted small">No workouts assigned yet.</td>
+                                </tr>
+                            <% } %>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Assigned Members -->
+    <div class="col-md-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">My Assigned Members</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <% if (assignedMembers.length > 0) { %>
+                        <% assignedMembers.forEach(member => { %>
+                            <div class="list-group-item d-flex align-items-center">
+                                <img src="<%= member.profile_picture || 'https://via.placeholder.com/40' %>" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold"><%= member.full_name %></div>
+                                    <small class="text-muted"><%= member.plan_name %></small>
+                                </div>
+                                <a href="/workouts" class="btn btn-sm btn-outline-primary" title="Assign Workout">
+                                    <i class="fas fa-plus"></i>
+                                </a>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <div class="p-4 text-center text-muted">No members assigned to you yet.</div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.12) !important;
+    }
+</style>
 
 <%- include('../partials/footer') %>
