@@ -1,0 +1,111 @@
+<%- include('../partials/header') %>
+
+<div class="mb-4">
+    <h2 class="fw-bold">Reports & Analytics</h2>
+    <p class="text-muted">Visual insights into gym performance and statistics.</p>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">Monthly Income (Current Year)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="incomeChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">Plan Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="planChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">Daily Attendance (Last 7 Days)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="attendanceChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Income Chart
+        const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+        new Chart(incomeCtx, {
+            type: 'bar',
+            data: {
+                labels: <%- JSON.stringify(incomeData.map(d => d.month)) %>,
+                datasets: [{
+                    label: 'Income (₱)',
+                    data: <%- JSON.stringify(incomeData.map(d => d.total)) %>,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Plan Chart
+        const planCtx = document.getElementById('planChart').getContext('2d');
+        new Chart(planCtx, {
+            type: 'pie',
+            data: {
+                labels: <%- JSON.stringify(planData.map(d => d.name)) %>,
+                datasets: [{
+                    data: <%- JSON.stringify(planData.map(d => d.count)) %>,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(153, 102, 255, 0.7)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Attendance Chart
+        const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
+        new Chart(attendanceCtx, {
+            type: 'line',
+            data: {
+                labels: <%- JSON.stringify(attendanceData.map(d => new Date(d.date).toLocaleDateString())) %>,
+                datasets: [{
+                    label: 'Check-ins',
+                    data: <%- JSON.stringify(attendanceData.map(d => d.count)) %>,
+                    borderColor: 'rgba(40, 167, 69, 1)',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    });
+</script>
+
+<%- include('../partials/footer') %>

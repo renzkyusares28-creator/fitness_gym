@@ -1,0 +1,55 @@
+<%- include('../../partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Payments History</h2>
+    <a href="/payments/add" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Record New Payment
+    </a>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Receipt #</th>
+                        <th>Member</th>
+                        <th>Plan</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (payments.length > 0) { %>
+                        <% payments.forEach(payment => { %>
+                            <tr>
+                                <td class="fw-bold text-primary"><%= payment.receipt_number %></td>
+                                <td><%= payment.full_name %></td>
+                                <td><%= payment.plan_name %></td>
+                                <td>₱<%= payment.amount.toLocaleString() %></td>
+                                <td>
+                                    <span class="badge bg-secondary"><%= payment.payment_method %></span>
+                                </td>
+                                <td><%= new Date(payment.payment_date).toLocaleDateString() %></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-info" onclick="window.print()">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No payments found.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<%- include('../../partials/footer') %>

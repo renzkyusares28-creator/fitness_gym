@@ -1,0 +1,50 @@
+<%- include('../../partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Trainers Management</h2>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTrainerModal">
+        <i class="fas fa-plus me-2"></i>Add New Trainer
+    </button>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Specialization</th>
+                        <th>Contact</th>
+                        <th>Email</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (trainers.length > 0) { %>
+                        <% trainers.forEach(trainer => { %>
+                            <tr>
+                                <td class="fw-bold"><%= trainer.full_name %></td>
+                                <td><%= trainer.specialization %></td>
+                                <td><%= trainer.contact_number %></td>
+                                <td><%= trainer.email %></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="/trainers/edit/<%= trainer.id %>" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
+                                        <a href="/trainers/delete/<%= trainer.id %>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">No trainers found.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<%- include('../../partials/footer') %>

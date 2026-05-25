@@ -1,0 +1,126 @@
+<%- include('../partials/header') %>
+
+<div class="row mb-4">
+    <div class="col">
+        <h2 class="fw-bold">Admin Dashboard</h2>
+        <p class="text-muted">Welcome back, Admin!</p>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white h-100 shadow-sm border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase mb-1">Total Members</h6>
+                        <h2 class="mb-0 fw-bold"><%= stats.totalMembers %></h2>
+                    </div>
+                    <i class="fas fa-users fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white h-100 shadow-sm border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase mb-1">Active Members</h6>
+                        <h2 class="mb-0 fw-bold"><%= stats.activeMembers %></h2>
+                    </div>
+                    <i class="fas fa-user-check fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white h-100 shadow-sm border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase mb-1">Total Trainers</h6>
+                        <h2 class="mb-0 fw-bold"><%= stats.totalTrainers %></h2>
+                    </div>
+                    <i class="fas fa-user-tie fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark h-100 shadow-sm border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase mb-1">Monthly Income</h6>
+                        <h2 class="mb-0 fw-bold">₱<%= stats.monthlyIncome.toLocaleString() %></h2>
+                    </div>
+                    <i class="fas fa-coins fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">Membership Statistics</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="membershipChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="/members/add" class="btn btn-outline-primary text-start">
+                        <i class="fas fa-user-plus me-2"></i> Register New Member
+                    </a>
+                    <a href="/payments/add" class="btn btn-outline-success text-start">
+                        <i class="fas fa-money-bill-wave me-2"></i> Record Payment
+                    </a>
+                    <a href="/attendance" class="btn btn-outline-info text-start">
+                        <i class="fas fa-clipboard-list me-2"></i> View Attendance
+                    </a>
+                    <a href="/plans" class="btn btn-outline-warning text-start">
+                        <i class="fas fa-tags me-2"></i> Manage Plans
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('membershipChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'New Memberships',
+                    data: [12, 19, 3, 5, 2, 3],
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1,
+                    fill: true,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    });
+</script>
+
+<%- include('../partials/footer') %>

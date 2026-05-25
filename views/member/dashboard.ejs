@@ -1,0 +1,75 @@
+<%- include('../partials/header') %>
+
+<div class="row mb-4">
+    <div class="col">
+        <h2 class="fw-bold">Member Dashboard</h2>
+        <p class="text-muted">Welcome to your fitness journey!</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <img src="<%= memberData?.profile_picture || 'https://via.placeholder.com/150' %>" alt="Profile" class="rounded-circle img-thumbnail" style="width: 120px; height: 120px; object-fit: cover;">
+                </div>
+                <h4 class="fw-bold"><%= memberData?.full_name || user.username %></h4>
+                <p class="text-muted"><%= memberData?.plan_name || 'No Plan' %></p>
+                <div class="badge bg-<%= memberData?.status === 'Active' ? 'success' : 'danger' %> px-3 py-2">
+                    <%= memberData?.status || 'Inactive' %>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card bg-info text-white shadow-sm border-0">
+                    <div class="card-body">
+                        <h6 class="text-uppercase mb-1">Total Attendances</h6>
+                        <h2 class="mb-0 fw-bold"><%= stats.attendanceCount %></h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card bg-warning text-dark shadow-sm border-0">
+                    <div class="card-body">
+                        <h6 class="text-uppercase mb-1">Membership Expiry</h6>
+                        <h2 class="mb-0 fw-bold"><%= stats.expiryDate === 'N/A' ? 'N/A' : new Date(stats.expiryDate).toLocaleDateString() %></h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">My Workout Program</h5>
+                <a href="/workouts" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">No workout program assigned yet. Contact your trainer!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">My QR Code</h5>
+            </div>
+            <div class="card-body text-center">
+                <% if (memberData?.qr_code_data) { %>
+                    <img src="<%= memberData.qr_code_data %>" alt="QR Code" class="img-fluid mb-3" style="max-width: 200px;">
+                    <p class="small text-muted">Show this QR code at the counter for attendance.</p>
+                <% } else { %>
+                    <p class="text-muted">QR Code not generated yet.</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

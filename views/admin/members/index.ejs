@@ -1,0 +1,86 @@
+<%- include('../../partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Members Management</h2>
+    <a href="/members/add" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Add New Member
+    </a>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Photo</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Plan</th>
+                        <th>Status</th>
+                        <th>Expiry</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (members.length > 0) { %>
+                        <% members.forEach(member => { %>
+                            <tr>
+                                <td>
+                                    <img src="<%= member.profile_picture || 'https://via.placeholder.com/50' %>" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                                </td>
+                                <td>
+                                    <div class="fw-bold"><%= member.full_name %></div>
+                                    <small class="text-muted">@<%= member.username %></small>
+                                </td>
+                                <td><%= member.email %></td>
+                                <td><%= member.plan_name || 'N/A' %></td>
+                                <td>
+                                    <span class="badge bg-<%= member.status === 'Active' ? 'success' : 'danger' %>">
+                                        <%= member.status %>
+                                    </span>
+                                </td>
+                                <td><%= member.membership_expiry_date ? new Date(member.membership_expiry_date).toLocaleDateString() : 'N/A' %></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-outline-info" title="View QR" data-bs-toggle="modal" data-bs-target="#qrModal<%= member.id %>">
+                                            <i class="fas fa-qrcode"></i>
+                                        </button>
+                                        <a href="/members/edit/<%= member.id %>" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="/members/delete/<%= member.id %>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+
+                                    <!-- QR Modal -->
+                                    <div class="modal fade" id="qrModal<%= member.id %>" tabindex="-1">
+                                        <div class="modal-dialog modal-sm">
+                                            <div class="modal-content text-center">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title"><%= member.full_name %>'s QR</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <img src="<%= member.qr_code_data %>" class="img-fluid">
+                                                    <p class="mt-2 text-muted small">ID: <%= member.id %></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No members found.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<%- include('../../partials/footer') %>

@@ -1,0 +1,74 @@
+<%- include('../partials/header') %>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h4 class="mb-0 fw-bold text-center">QR Attendance Scanner</h4>
+            </div>
+            <div class="card-body">
+                <div id="reader" style="width: 100%;"></div>
+                <div id="result" class="mt-4"></div>
+            </div>
+        </div>
+        <div class="text-center mt-3">
+            <a href="/attendance" class="btn btn-link text-decoration-none">
+                <i class="fas fa-arrow-left me-1"></i> Back to History
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- QR Scanner Library -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<script>
+    function onScanSuccess(decodedText, decodedResult) {
+        // Stop scanning to prevent multiple records
+        html5QrcodeScanner.clear();
+        
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = '<div class="alert alert-info">Processing...</div>';
+
+        // Send to backend
+        fetch('/attendance/record', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ qrData: decodedText })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                resultDiv.innerHTML = `<div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>${data.message}
+                </div>
+                <button onclick="location.reload()" class="btn btn-primary w-100">Scan Next</button>`;
+                
+                // Play success sound
+                const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
+                audio.play();
+            } else {
+                resultDiv.innerHTML = `<div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>${data.message}
+                </div>
+                <button onclick="location.reload()" class="btn btn-secondary w-100">Try Again</button>`;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            resultDiv.innerHTML = '<div class="alert alert-danger">An error occurred. Please try again.</div>';
+        });
+    }
+
+    function onScanFailure(error) {
+        // handle scan failure, usually better to ignore and keep scanning
+    }
+
+    let html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader", { fps: 10, qrbox: {width: 250, height: 250} }, /* verbose= */ false);
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+</script>
+
+<%- include('../partials/footer') %>
