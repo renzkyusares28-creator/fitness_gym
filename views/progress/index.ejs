@@ -1,0 +1,169 @@
+<%- include('../partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Body Progress Tracking</h2>
+    <% if (user.role === 'Trainer') { %>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProgressModal">
+            <i class="fas fa-plus me-2"></i>New Entry
+        </button>
+    <% } %>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">Weight Progress Chart</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="progressChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold">Historical Data</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <% if (user.role === 'Trainer') { %><th>Member</th><% } %>
+                        <th>Weight (kg)</th>
+                        <th>BMI</th>
+                        <th>Body Fat %</th>
+                        <th>Chest/Arms (in)</th>
+                        <th>Calories</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (progress.length > 0) { %>
+                        <% progress.forEach(entry => { %>
+                            <tr>
+                                <td><%= new Date(entry.recorded_at).toLocaleDateString() %></td>
+                                <% if (user.role === 'Trainer') { %><td><%= entry.member_name %></td><% } %>
+                                <td class="fw-bold"><%= entry.weight %></td>
+                                <td><%= entry.bmi %></td>
+                                <td><%= entry.body_fat_percentage %>%</td>
+                                <td><%= entry.chest_size %> / <%= entry.arm_size %></td>
+                                <td><span class="badge bg-danger"><%= entry.calories_burned %> kcal</span></td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No progress data recorded yet.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<% if (user.role === 'Trainer') { %>
+<!-- Add Modal -->
+<div class="modal fade" id="addProgressModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Record Body Metrics</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="/progress/add" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Member</label>
+                        <select name="member_id" class="form-select" required>
+                            <option value="">-- Select Member --</option>
+                            <% members.forEach(m => { %>
+                                <option value="<%= m.id %>"><%= m.full_name %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Weight (kg)</label>
+                            <input type="number" step="0.1" name="weight" class="form-control" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">BMI</label>
+                            <input type="number" step="0.1" name="bmi" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Body Fat %</label>
+                            <input type="number" step="0.1" name="body_fat_percentage" class="form-control">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Calories Burned</label>
+                            <input type="number" name="calories_burned" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Chest Size (in)</label>
+                            <input type="number" step="0.1" name="chest_size" class="form-control">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Arm Size (in)</label>
+                            <input type="number" step="0.1" name="arm_size" class="form-control">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Date</label>
+                        <input type="date" name="recorded_at" class="form-control" value="<%= new Date().toISOString().split('T')[0] %>">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary w-100">Save Progress</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<% } %>
+
+<!-- Chart Logic -->
+<script id="chart-data" type="application/json">
+    <%- JSON.stringify(chartData) %>
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const rawData = JSON.parse(document.getElementById('chart-data').textContent);
+        const labels = rawData.map(d => new Date(d.recorded_at).toLocaleDateString());
+        const weights = rawData.map(d => d.weight);
+
+        const ctx = document.getElementById('progressChart');
+        if (!ctx) return;
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Weight (kg)',
+                    data: weights,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: false }
+                }
+            }
+        });
+    });
+</script>
+
+<%- include('../partials/footer') %>

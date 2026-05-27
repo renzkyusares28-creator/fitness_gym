@@ -56,19 +56,25 @@ exports.recordAttendance = async (req, res) => {
             return res.status(403).json({ success: false, message: 'Membership has expired' });
         }
 
-        // Check if already checked in today (optional, but good practice)
-        const [todayAttendance] = await db.execute(
-            'SELECT * FROM attendances WHERE member_id = ? AND DATE(check_in_time) = CURRENT_DATE()',
+        // Check if there is an active check-in (no check-out yet)
+        const [activeSession] = await db.execute(
+            'SELECT * FROM attendances WHERE member_id = ? AND check_out_time IS NULL ORDER BY check_in_time DESC LIMIT 1',
             [memberData.id]
         );
 
-        if (todayAttendance.length > 0) {
-            return res.status(400).json({ success: false, message: 'Attendance already recorded for today' });
+        if (activeSession.length > 0) {
+            // If already checked in, then record check-out
+            await db.execute(
+                'UPDATE attendances SET check_out_time = CURRENT_TIMESTAMP, status = "Completed" WHERE id = ?',
+                [activeSession[0].id]
+            );
+            return res.json({ success: true, message: `Goodbye, ${memberData.full_name}! Check-out recorded.` });
         }
 
-        await db.execute('INSERT INTO attendances (member_id) VALUES (?)', [memberData.id]);
+        // Otherwise, record new check-in
+        await db.execute('INSERT INTO attendances (member_id, status) VALUES (?, "Active")', [memberData.id]);
 
-        res.json({ success: true, message: `Welcome, ${memberData.full_name}! Attendance recorded.` });
+        res.json({ success: true, message: `Welcome, ${memberData.full_name}! Check-in recorded.` });
 
     } catch (err) {
         console.error(err);

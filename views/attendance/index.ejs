@@ -19,6 +19,7 @@
                         <th>Member Name</th>
                         <th>Date</th>
                         <th>Check-in Time</th>
+                        <th>Check-out Time</th>
                         <th>Status</th>
                     </tr>
                 </thead>
@@ -32,14 +33,17 @@
                                 <td><%= record.full_name %></td>
                                 <td><%= new Date(record.check_in_time).toLocaleDateString() %></td>
                                 <td><%= new Date(record.check_in_time).toLocaleTimeString() %></td>
+                                <td><%= record.check_out_time ? new Date(record.check_out_time).toLocaleTimeString() : '---' %></td>
                                 <td>
-                                    <span class="badge bg-success">Present</span>
+                                    <span class="badge bg-<%= record.status === 'Active' ? 'warning' : 'success' %>">
+                                        <%= record.status %>
+                                    </span>
                                 </td>
                             </tr>
                         <% }) %>
                     <% } else { %>
                         <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">No attendance records found.</td>
+                            <td colspan="6" class="text-center py-4 text-muted">No attendance records found.</td>
                         </tr>
                     <% } %>
                 </tbody>

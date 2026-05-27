@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS attendances (
     id INT AUTO_INCREMENT PRIMARY KEY,
     member_id INT,
     check_in_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    check_out_time DATETIME,
     status VARCHAR(50) DEFAULT 'Present',
     FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE
 );

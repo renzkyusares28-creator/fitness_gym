@@ -64,6 +64,9 @@ const paymentRoutes = require('./routes/payments');
 const attendanceRoutes = require('./routes/attendance');
 const workoutRoutes = require('./routes/workouts');
 const reportRoutes = require('./routes/reports');
+const inventoryRoutes = require('./routes/inventory');
+const nutritionRoutes = require('./routes/nutrition');
+const progressRoutes = require('./routes/progress');
 
 app.use('/auth', authRoutes);
 app.use('/dashboard', dashboardRoutes);
@@ -74,6 +77,9 @@ app.use('/payments', paymentRoutes);
 app.use('/attendance', attendanceRoutes);
 app.use('/workouts', workoutRoutes);
 app.use('/reports', reportRoutes);
+app.use('/inventory', inventoryRoutes);
+app.use('/nutrition', nutritionRoutes);
+app.use('/progress', progressRoutes);
 
 // Home route
 app.get('/', (req, res) => {

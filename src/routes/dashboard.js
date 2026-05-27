@@ -21,6 +21,18 @@ router.get('/', isAuthenticated, async (req, res) => {
             stats.monthlyIncome = monthlyIncome[0].total || 0;
             stats.pendingCount = pendingCount[0].count;
 
+            // Fetch current capacity (members checked in but not checked out)
+            const [currentCapacity] = await db.execute('SELECT COUNT(*) as count FROM attendances WHERE check_out_time IS NULL');
+            stats.currentCapacity = currentCapacity[0].count;
+
+            // Fetch memberships expiring this week
+            const [expiringSoon] = await db.execute(`
+                SELECT COUNT(*) as count FROM members 
+                WHERE membership_expiry_date BETWEEN CURRENT_DATE() AND DATE_ADD(CURRENT_DATE(), INTERVAL 7 DAY)
+                AND status = 'Active'
+            `);
+            stats.expiringThisWeek = expiringSoon[0].count;
+
             // Fetch Recent Members
             const [recentMembers] = await db.execute(`
                 SELECT m.*, p.name as plan_name 
@@ -111,8 +123,12 @@ router.get('/', isAuthenticated, async (req, res) => {
             
             const [attendanceCount] = await db.execute('SELECT COUNT(*) as count FROM attendances WHERE member_id = ?', [memberData?.id]);
             
+            // Fetch current capacity for all members to see
+            const [currentCapacity] = await db.execute('SELECT COUNT(*) as count FROM attendances WHERE check_out_time IS NULL');
+            stats.currentCapacity = currentCapacity[0].count;
+
             // Fetch Recent Attendance
-            const [recentAttendance] = await db.execute('SELECT check_in_time FROM attendances WHERE member_id = ? ORDER BY check_in_time DESC LIMIT 5', [memberData?.id]);
+            const [recentAttendance] = await db.execute('SELECT check_in_time, check_out_time, status FROM attendances WHERE member_id = ? ORDER BY check_in_time DESC LIMIT 5', [memberData?.id]);
 
             // Fetch Assigned Workouts
             const [workouts] = await db.execute('SELECT * FROM workout_programs WHERE member_id = ? ORDER BY created_at DESC LIMIT 3', [memberData?.id]);
@@ -130,6 +146,20 @@ router.get('/', isAuthenticated, async (req, res) => {
             stats.attendanceCount = attendanceCount[0].count;
             stats.membershipStatus = memberData?.status || 'N/A';
             stats.expiryDate = memberData?.membership_expiry_date || 'N/A';
+
+            // Check if expiring in 3 days
+            if (memberData?.membership_expiry_date) {
+                const expiry = new Date(memberData.membership_expiry_date);
+                const today = new Date();
+                const diffTime = expiry - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays >= 0 && diffDays <= 3) {
+                    stats.expiryAlert = `Your membership expires in ${diffDays} day${diffDays !== 1 ? 's' : ''}!`;
+                } else if (diffDays < 0) {
+                    stats.expiryAlert = `Your membership has expired. Please renew to continue using the gym.`;
+                }
+            }
             
             res.render('member/dashboard', { stats, memberData, recentAttendance, workouts, schedules, page: 'dashboard' });
         }

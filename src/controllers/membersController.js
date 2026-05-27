@@ -141,7 +141,7 @@ exports.renderEditMember = async (req, res) => {
 
 exports.updateMember = async (req, res) => {
     const { id } = req.params;
-    const { username, email, full_name, age, gender, address, contact_number, membership_plan_id, status } = req.body;
+    const { username, email, full_name, age, gender, address, contact_number, membership_plan_id, status, emergency_contact, medical_conditions, allergies } = req.body;
     const profile_picture = req.file ? `/uploads/${req.file.filename}` : req.body.old_profile_picture;
 
     const connection = await db.getConnection();
@@ -160,9 +160,9 @@ exports.updateMember = async (req, res) => {
 
         // 2. Update Member
         await connection.execute(
-            `UPDATE members SET full_name = ?, age = ?, gender = ?, address = ?, contact_number = ?, profile_picture = ?, membership_plan_id = ?, status = ? 
+            `UPDATE members SET full_name = ?, age = ?, gender = ?, address = ?, contact_number = ?, profile_picture = ?, membership_plan_id = ?, status = ?, emergency_contact = ?, medical_conditions = ?, allergies = ?
              WHERE id = ?`,
-            [full_name, age, gender, address, contact_number, profile_picture, membership_plan_id, status, id]
+            [full_name, age, gender, address, contact_number, profile_picture, membership_plan_id, status, emergency_contact, medical_conditions, allergies, id]
         );
 
         await connection.commit();

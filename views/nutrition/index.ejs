@@ -1,0 +1,130 @@
+<%- include('../partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Nutrition & Meal Plans</h2>
+    <% if (user.role === 'Trainer') { %>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addNutritionModal">
+            <i class="fas fa-plus me-2"></i>Assign New Plan
+        </button>
+    <% } %>
+</div>
+
+<div class="row g-4">
+    <% if (plans.length > 0) { %>
+        <% plans.forEach(plan => { %>
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 fw-bold text-success"><%= plan.member_name %>'s Plan</h5>
+                            <span class="badge bg-success-subtle text-success">Active</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3 mb-4">
+                            <div class="col-4 text-center">
+                                <div class="p-2 bg-light rounded shadow-sm">
+                                    <h6 class="text-muted small mb-1">Calories</h6>
+                                    <div class="fw-bold"><%= plan.daily_calories_target %></div>
+                                </div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="p-2 bg-light rounded shadow-sm">
+                                    <h6 class="text-muted small mb-1">Protein</h6>
+                                    <div class="fw-bold"><%= plan.protein_target_grams %>g</div>
+                                </div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="p-2 bg-light rounded shadow-sm">
+                                    <h6 class="text-muted small mb-1">Water</h6>
+                                    <div class="fw-bold"><%= plan.water_target_liters %>L</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="meal-plan mb-3">
+                            <h6 class="fw-bold border-bottom pb-1"><i class="fas fa-coffee me-2 text-warning"></i>Breakfast</h6>
+                            <p class="small text-muted"><%= plan.breakfast_plan %></p>
+                        </div>
+                        <div class="meal-plan mb-3">
+                            <h6 class="fw-bold border-bottom pb-1"><i class="fas fa-sun me-2 text-primary"></i>Lunch</h6>
+                            <p class="small text-muted"><%= plan.lunch_plan %></p>
+                        </div>
+                        <div class="meal-plan">
+                            <h6 class="fw-bold border-bottom pb-1"><i class="fas fa-moon me-2 text-dark"></i>Dinner</h6>
+                            <p class="small text-muted"><%= plan.dinner_plan %></p>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-0 py-3">
+                        <small class="text-muted">Assigned by: <%= plan.trainer_name %></small>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    <% } else { %>
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-utensils fa-4x text-light mb-3"></i>
+            <h4 class="text-muted">No nutrition plans found.</h4>
+        </div>
+    <% } %>
+</div>
+
+<% if (user.role === 'Trainer') { %>
+<!-- Add Modal -->
+<div class="modal fade" id="addNutritionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Assign Nutrition Plan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="/nutrition/add" method="POST">
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Select Member</label>
+                            <select name="member_id" class="form-select" required>
+                                <option value="">-- Choose Member --</option>
+                                <% members.forEach(m => { %>
+                                    <option value="<%= m.id %>"><%= m.full_name %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Calorie Target</label>
+                            <input type="number" name="daily_calories_target" class="form-control" required placeholder="e.g. 2000">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Protein (grams)</label>
+                            <input type="number" name="protein_target_grams" class="form-control" required placeholder="e.g. 150">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Water (liters)</label>
+                            <input type="number" step="0.1" name="water_target_liters" class="form-control" required placeholder="e.g. 3.5">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Breakfast Plan</label>
+                        <textarea name="breakfast_plan" class="form-control" rows="2" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Lunch Plan</label>
+                        <textarea name="lunch_plan" class="form-control" rows="2" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dinner Plan</label>
+                        <textarea name="dinner_plan" class="form-control" rows="2" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success w-100">Assign Plan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<% } %>
+
+<%- include('../partials/footer') %>

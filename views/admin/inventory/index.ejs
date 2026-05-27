@@ -1,0 +1,174 @@
+<%- include('../../partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Gym Inventory Management</h2>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">
+        <i class="fas fa-plus me-2"></i>Add Equipment
+    </button>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="text-uppercase small mb-1">Total Items</h6>
+                <h2 class="mb-0 fw-bold"><%= inventory.length %></h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="text-uppercase small mb-1">Needs Maintenance</h6>
+                <h2 class="mb-0 fw-bold"><%= inventory.filter(i => i.status === 'Needs Maintenance' || i.status === 'Damaged').length %></h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Equipment Name</th>
+                        <th>Category</th>
+                        <th>Qty</th>
+                        <th>Status</th>
+                        <th>Next Maintenance</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (inventory.length > 0) { %>
+                        <% inventory.forEach(item => { %>
+                            <tr>
+                                <td class="fw-bold"><%= item.item_name %></td>
+                                <td><%= item.category %></td>
+                                <td><%= item.quantity %></td>
+                                <td>
+                                    <span class="badge bg-<% 
+                                        if(item.status === 'Good') { %>success<% } 
+                                        else if(item.status === 'Fair') { %>warning<% } 
+                                        else { %>danger<% } 
+                                    %>">
+                                        <%= item.status %>
+                                    </span>
+                                </td>
+                                <td><%= item.next_maintenance_date ? new Date(item.next_maintenance_date).toLocaleDateString() : 'N/A' %></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editItem<%= item.id %>">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <a href="/inventory/delete/<%= item.id %>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove this item?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+
+                            <!-- Edit Modal -->
+                            <div class="modal fade" id="editItem<%= item.id %>" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title fw-bold">Update Status: <%= item.item_name %></h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <form action="/inventory/update/<%= item.id %>" method="POST">
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Status</label>
+                                                    <select name="status" class="form-select">
+                                                        <option value="Good" <%= item.status === 'Good' ? 'selected' : '' %>>Good</option>
+                                                        <option value="Fair" <%= item.status === 'Fair' ? 'selected' : '' %>>Fair</option>
+                                                        <option value="Needs Maintenance" <%= item.status === 'Needs Maintenance' ? 'selected' : '' %>>Needs Maintenance</option>
+                                                        <option value="Damaged" <%= item.status === 'Damaged' ? 'selected' : '' %>>Damaged</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Last Maintenance Date</label>
+                                                    <input type="date" name="last_maintenance_date" class="form-control" value="<%= item.last_maintenance_date ? item.last_maintenance_date.toISOString().split('T')[0] : '' %>">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Next Maintenance Date</label>
+                                                    <input type="date" name="next_maintenance_date" class="form-control" value="<%= item.next_maintenance_date ? item.next_maintenance_date.toISOString().split('T')[0] : '' %>">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Notes</label>
+                                                    <textarea name="notes" class="form-control" rows="3"><%= item.notes %></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">No equipment in inventory.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addItemModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Add New Equipment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="/inventory/add" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Equipment Name</label>
+                        <input type="text" name="item_name" class="form-control" required placeholder="e.g. Treadmill X1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Category</label>
+                        <select name="category" class="form-select">
+                            <option value="Cardio">Cardio</option>
+                            <option value="Strength">Strength</option>
+                            <option value="Weights">Weights</option>
+                            <option value="Accessories">Accessories</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Quantity</label>
+                        <input type="number" name="quantity" class="form-control" value="1" min="1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="Good">Good</option>
+                            <option value="Fair">Fair</option>
+                            <option value="Needs Maintenance">Needs Maintenance</option>
+                            <option value="Damaged">Damaged</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Next Maintenance Date</label>
+                        <input type="date" name="next_maintenance_date" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea name="notes" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary w-100">Add Equipment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<%- include('../../partials/footer') %>
