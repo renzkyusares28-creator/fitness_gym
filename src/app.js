@@ -15,6 +15,11 @@ async function testConnection() {
         const connection = await db.getConnection();
         console.log('✅ Database connected successfully!');
         connection.release();
+        
+        // Run migration after successful connection
+        console.log('🚀 Running automatic database updates...');
+        const migrate = require('../migrate');
+        await migrate();
     } catch (err) {
         console.error('❌ Database connection failed!');
         console.error('Error Details:', err.message);

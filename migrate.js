@@ -52,7 +52,6 @@ async function migrate() {
             FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE CASCADE,
             FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE
         )`);
-        console.log('✅ Verified trainer_reviews table');
 
         await db.execute(`CREATE TABLE IF NOT EXISTS member_progress (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -68,7 +67,6 @@ async function migrate() {
             FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE,
             FOREIGN KEY (recorded_by) REFERENCES trainers(id)
         )`);
-        console.log('✅ Verified member_progress table');
 
         await db.execute(`CREATE TABLE IF NOT EXISTS nutrition_plans (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -84,7 +82,6 @@ async function migrate() {
             FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE,
             FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE CASCADE
         )`);
-        console.log('✅ Verified nutrition_plans table');
 
         await db.execute(`CREATE TABLE IF NOT EXISTS gym_inventory (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -96,14 +93,18 @@ async function migrate() {
             next_maintenance_date DATE,
             notes TEXT
         )`);
-        console.log('✅ Verified gym_inventory table');
 
         console.log('🎉 Migration Completed Successfully!');
-        process.exit(0);
+        return true;
     } catch (err) {
         console.error('❌ Migration Failed:', err.message);
-        process.exit(1);
+        return false;
     }
 }
 
-migrate();
+// Run if called directly
+if (require.main === module) {
+    migrate().then(success => process.exit(success ? 0 : 1));
+}
+
+module.exports = migrate;
