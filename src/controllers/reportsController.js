@@ -28,10 +28,25 @@ exports.getReports = async (req, res) => {
             ORDER BY DATE(check_in_time)
         `);
 
+        // 4. Trainer Performance Stats
+        const [trainerStats] = await db.query(`
+            SELECT 
+                t.id, 
+                t.full_name, 
+                COUNT(DISTINCT ts.member_id) as total_clients,
+                COUNT(ts.id) as sessions_completed,
+                AVG(tr.rating) as avg_rating
+            FROM trainers t
+            LEFT JOIN trainer_schedules ts ON t.id = ts.trainer_id
+            LEFT JOIN trainer_reviews tr ON t.id = tr.trainer_id
+            GROUP BY t.id, t.full_name
+        `);
+
         res.render('reports/index', { 
             incomeData, 
             planData, 
             attendanceData,
+            trainerStats,
             page: 'reports'
         });
     } catch (err) {

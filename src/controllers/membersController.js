@@ -55,7 +55,7 @@ exports.addMember = async (req, res) => {
         
         // Fetch plan duration to calculate expiry
         let months = 1;
-        let planId = membership_plan_id || null;
+        let planId = (membership_plan_id && membership_plan_id !== "") ? membership_plan_id : null;
         
         if (planId) {
             const [plan] = await connection.execute('SELECT duration_months FROM membership_plans WHERE id = ?', [planId]);
@@ -65,8 +65,9 @@ exports.addMember = async (req, res) => {
         }
 
         const expiryDate = new Date();
-        expiryDate.setMonth(expiryDate.getMonth() + months);
-        const formattedExpiryDate = expiryDate.toISOString().split('T')[0];
+        expiryDate.setMonth(expiryDate.getDate() === 31 ? expiryDate.getMonth() + months : expiryDate.getMonth() + months); 
+        // Simple expiry calculation: add months
+        const formattedExpiryDate = new Date(new Date().setMonth(new Date().getMonth() + months)).toISOString().split('T')[0];
 
         await connection.execute(
             `INSERT INTO members (user_id, full_name, age, gender, address, contact_number, profile_picture, membership_plan_id, qr_code_data, registration_date, membership_expiry_date, emergency_contact, medical_conditions, allergies) 
@@ -80,7 +81,11 @@ exports.addMember = async (req, res) => {
 
     } catch (err) {
         await connection.rollback();
-        console.error('Add Member Error:', err.message);
+        console.error('--- ADD MEMBER ERROR ---');
+        console.error('Error Name:', err.name);
+        console.error('Error Message:', err.message);
+        console.error('Error Stack:', err.stack);
+        console.error('-------------------------');
         req.session.error = "Error registering member: " + err.message;
         res.redirect('/members/add');
     } finally {

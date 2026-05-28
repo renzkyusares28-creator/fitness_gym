@@ -67,6 +67,9 @@ const reportRoutes = require('./routes/reports');
 const inventoryRoutes = require('./routes/inventory');
 const nutritionRoutes = require('./routes/nutrition');
 const progressRoutes = require('./routes/progress');
+const bookingRoutes = require('./routes/bookings');
+const reviewRoutes = require('./routes/reviews');
+const onlinePaymentRoutes = require('./routes/onlinePayments');
 
 app.use('/auth', authRoutes);
 app.use('/dashboard', dashboardRoutes);
@@ -74,12 +77,15 @@ app.use('/members', memberRoutes);
 app.use('/trainers', trainerRoutes);
 app.use('/plans', planRoutes);
 app.use('/payments', paymentRoutes);
+app.use('/online-payments', onlinePaymentRoutes);
 app.use('/attendance', attendanceRoutes);
 app.use('/workouts', workoutRoutes);
 app.use('/reports', reportRoutes);
 app.use('/inventory', inventoryRoutes);
 app.use('/nutrition', nutritionRoutes);
 app.use('/progress', progressRoutes);
+app.use('/bookings', bookingRoutes);
+app.use('/reviews', reviewRoutes);
 
 // Home route
 app.get('/', (req, res) => {

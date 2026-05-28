@@ -28,7 +28,7 @@
     </div>
 </div>
 
-<div class="row">
+<div class="row mb-4">
     <div class="col-md-12">
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white py-3">
@@ -36,6 +36,66 @@
             </div>
             <div class="card-body">
                 <canvas id="attendanceChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">Trainer Performance Monitoring</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Trainer Name</th>
+                                <th>Total Clients</th>
+                                <th>Sessions Completed</th>
+                                <th>Avg Rating</th>
+                                <th>Performance Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (trainerStats && trainerStats.length > 0) { %>
+                                <% trainerStats.forEach(trainer => { %>
+                                    <tr>
+                                        <td class="fw-bold"><%= trainer.full_name %></td>
+                                        <td><%= trainer.total_clients %></td>
+                                        <td><%= trainer.sessions_completed %></td>
+                                        <td>
+                                            <div class="text-warning">
+                                                <% const rating = Math.round(trainer.avg_rating || 0); %>
+                                                <% for(let i=1; i<=5; i++) { %>
+                                                    <i class="fa<%= i <= rating ? 's' : 'r' %> fa-star small"></i>
+                                                <% } %>
+                                                <span class="ms-1 text-muted small">(<%= (trainer.avg_rating || 0).toFixed(1) %>)</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <% if (trainer.avg_rating >= 4.5) { %>
+                                                <span class="badge bg-success">Top Performer</span>
+                                            <% } else if (trainer.avg_rating >= 3.5) { %>
+                                                <span class="badge bg-info">Good</span>
+                                            <% } else if (trainer.avg_rating > 0) { %>
+                                                <span class="badge bg-warning">Needs Improvement</span>
+                                            <% } else { %>
+                                                <span class="badge bg-secondary">No Ratings</span>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">No trainer data available.</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

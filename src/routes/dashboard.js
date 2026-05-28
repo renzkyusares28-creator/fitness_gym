@@ -5,6 +5,9 @@ const db = require('../config/db');
 
 router.get('/', isAuthenticated, async (req, res) => {
     try {
+        // Auto-deactivate expired members
+        await db.execute("UPDATE members SET status = 'Inactive' WHERE membership_expiry_date < CURRENT_DATE() AND status = 'Active'");
+
         const stats = {};
         
         if (req.session.user.role === 'Admin') {

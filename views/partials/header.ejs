@@ -46,12 +46,23 @@
                 <li class="<%= (typeof page !== 'undefined' && page === 'workouts') ? 'active' : '' %>">
                     <a href="/workouts"><i class="fas fa-dumbbell"></i> Workout Programs</a>
                 </li>
+                <li class="<%= (typeof page !== 'undefined' && page === 'bookings') ? 'active' : '' %>">
+                    <a href="/bookings"><i class="fas fa-calendar-check"></i> Session Bookings</a>
+                </li>
+                <li class="<%= (typeof page !== 'undefined' && page === 'reviews') ? 'active' : '' %>">
+                    <a href="/reviews"><i class="fas fa-star"></i> Trainer Reviews</a>
+                </li>
                 <% if (user.role === 'Trainer' || user.role === 'Member') { %>
                 <li class="<%= (typeof page !== 'undefined' && page === 'progress') ? 'active' : '' %>">
                     <a href="/progress"><i class="fas fa-chart-line"></i> Progress Tracking</a>
                 </li>
                 <li class="<%= (typeof page !== 'undefined' && page === 'nutrition') ? 'active' : '' %>">
                     <a href="/nutrition"><i class="fas fa-utensils"></i> Nutrition Plans</a>
+                </li>
+                <% } %>
+                <% if (user.role === 'Member') { %>
+                <li class="<%= (typeof page !== 'undefined' && page === 'payments') ? 'active' : '' %>">
+                    <a href="/online-payments/online"><i class="fas fa-credit-card"></i> Pay Online</a>
                 </li>
                 <% } %>
                 <% if (user.role === 'Admin') { %>

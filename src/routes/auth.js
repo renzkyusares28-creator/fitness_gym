@@ -54,12 +54,13 @@ router.post('/signup', async (req, res) => {
 
         // 4. Create Member Profile
         const registrationDate = new Date().toISOString().split('T')[0];
+        const planId = (membership_plan_id && membership_plan_id !== "") ? membership_plan_id : null;
         
         // Expiry will be set upon approval/payment, initially set to current date
         await connection.execute(
             `INSERT INTO members (user_id, full_name, age, gender, address, contact_number, membership_plan_id, qr_code_data, registration_date, status) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Inactive')`,
-            [userId, full_name, age, gender, address, contact_number, membership_plan_id, qrCodeImageUrl, registrationDate]
+            [userId, full_name, age, gender, address, contact_number, planId, qrCodeImageUrl, registrationDate]
         );
 
         await connection.commit();
@@ -68,7 +69,11 @@ router.post('/signup', async (req, res) => {
 
     } catch (err) {
         await connection.rollback();
-        console.error(err);
+        console.error('--- SIGNUP ERROR ---');
+        console.error('Error Name:', err.name);
+        console.error('Error Message:', err.message);
+        console.error('Error Stack:', err.stack);
+        console.error('-------------------------');
         req.session.error = "An error occurred during signup: " + err.message;
         res.redirect('/auth/signup');
     } finally {

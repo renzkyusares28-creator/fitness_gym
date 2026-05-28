@@ -1,0 +1,90 @@
+<%- include('../partials/header') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Trainer Reviews & Ratings</h2>
+    <% if (user.role === 'Member') { %>
+        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addReviewModal">
+            <i class="fas fa-star me-2"></i>Rate your Trainer
+        </button>
+    <% } %>
+</div>
+
+<div class="row">
+    <% if (reviews.length > 0) { %>
+        <% reviews.forEach(review => { %>
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-grow-1">
+                                <h6 class="fw-bold mb-0"><%= review.trainer_name %></h6>
+                                <small class="text-muted">Reviewed by: <%= review.member_name %></small>
+                            </div>
+                            <div class="text-warning">
+                                <% for(let i=1; i<=5; i++) { %>
+                                    <i class="fa<%= i <= review.rating ? 's' : 'r' %> fa-star"></i>
+                                <% } %>
+                            </div>
+                        </div>
+                        <p class="card-text font-italic text-muted">"<%= review.review %>"</p>
+                    </div>
+                    <div class="card-footer bg-white border-0">
+                        <small class="text-muted"><%= new Date(review.created_at).toLocaleDateString() %></small>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    <% } else { %>
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-comment-slash fa-4x text-light mb-3"></i>
+            <h4 class="text-muted">No reviews yet.</h4>
+        </div>
+    <% } %>
+</div>
+
+<% if (user.role === 'Member') { %>
+<!-- Review Modal -->
+<div class="modal fade" id="addReviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Rate your Training Experience</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="/reviews/add" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Select Trainer</label>
+                        <select name="trainer_id" class="form-select" required>
+                            <option value="">-- Choose a Trainer --</option>
+                            <% trainers.forEach(t => { %>
+                                <option value="<%= t.id %>"><%= t.full_name %></option>
+                            <% }) %>
+                        </select>
+                        <small class="text-muted">Only trainers you've had sessions with are listed.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <select name="rating" class="form-select" required>
+                            <option value="5">5 - Excellent</option>
+                            <option value="4">4 - Very Good</option>
+                            <option value="3">3 - Good</option>
+                            <option value="2">2 - Fair</option>
+                            <option value="1">1 - Poor</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Your Review</label>
+                        <textarea name="review" class="form-control" rows="3" placeholder="Share your experience..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-warning w-100">Submit Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<% } %>
+
+<%- include('../partials/footer') %>
