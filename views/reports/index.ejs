@@ -18,8 +18,9 @@
     </div>
     <div class="col-md-4">
         <div class="card shadow-sm border-0 h-100">
-            <div class="card-header bg-white py-3">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 class="mb-0 fw-bold">Plan Distribution</h5>
+                <i class="fas fa-chart-pie text-muted"></i>
             </div>
             <div class="card-body">
                 <canvas id="planChart" height="300"></canvas>
@@ -68,19 +69,21 @@
                                         <td><%= trainer.sessions_completed %></td>
                                         <td>
                                             <div class="text-warning">
-                                                <% const rating = Math.round(trainer.avg_rating || 0); %>
+                                                <% const rawRating = Number(trainer.avg_rating || 0); %>
+                                                <% const rating = Math.round(rawRating); %>
                                                 <% for(let i=1; i<=5; i++) { %>
-                                                    <i class="fa<%= i <= rating ? 's' : 'r' %> fa-star small"></i>
+                                                    <% const starType = i <= rating ? 's' : 'r'; %>
+                                                    <i class="fa<%= starType %> fa-star small"></i>
                                                 <% } %>
-                                                <span class="ms-1 text-muted small">(<%= (trainer.avg_rating || 0).toFixed(1) %>)</span>
+                                                <span class="ms-1 text-muted small">(<%= rawRating.toFixed(1) %>)</span>
                                             </div>
                                         </td>
                                         <td>
-                                            <% if (trainer.avg_rating >= 4.5) { %>
+                                            <% if (rawRating >= 4.5) { %>
                                                 <span class="badge bg-success">Top Performer</span>
-                                            <% } else if (trainer.avg_rating >= 3.5) { %>
+                                            <% } else if (rawRating >= 3.5) { %>
                                                 <span class="badge bg-info">Good</span>
-                                            <% } else if (trainer.avg_rating > 0) { %>
+                                            <% } else if (rawRating > 0) { %>
                                                 <span class="badge bg-warning">Needs Improvement</span>
                                             <% } else { %>
                                                 <span class="badge bg-secondary">No Ratings</span>
@@ -101,70 +104,83 @@
     </div>
 </div>
 
+<!-- Chart Data -->
+<script id="report-data" type="application/json">
+    <%- JSON.stringify({ incomeData, planData, attendanceData }) %>
+</script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const data = JSON.parse(document.getElementById('report-data').textContent);
+        
         // Income Chart
-        const incomeCtx = document.getElementById('incomeChart').getContext('2d');
-        new Chart(incomeCtx, {
-            type: 'bar',
-            data: {
-                labels: <%- JSON.stringify(incomeData.map(d => d.month)) %>,
-                datasets: [{
-                    label: 'Income (₱)',
-                    data: <%- JSON.stringify(incomeData.map(d => d.total)) %>,
-                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
+        const incomeCtx = document.getElementById('incomeChart');
+        if (incomeCtx) {
+            new Chart(incomeCtx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: data.incomeData.map(d => d.month),
+                    datasets: [{
+                        label: 'Income (₱)',
+                        data: data.incomeData.map(d => d.total),
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
 
         // Plan Chart
-        const planCtx = document.getElementById('planChart').getContext('2d');
-        new Chart(planCtx, {
-            type: 'pie',
-            data: {
-                labels: <%- JSON.stringify(planData.map(d => d.name)) %>,
-                datasets: [{
-                    data: <%- JSON.stringify(planData.map(d => d.count)) %>,
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.7)',
-                        'rgba(75, 192, 192, 0.7)',
-                        'rgba(255, 206, 86, 0.7)',
-                        'rgba(153, 102, 255, 0.7)'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
+        const planCtx = document.getElementById('planChart');
+        if (planCtx) {
+            new Chart(planCtx.getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: data.planData.map(d => d.name),
+                    datasets: [{
+                        data: data.planData.map(d => d.count),
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(153, 102, 255, 0.7)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
 
         // Attendance Chart
-        const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
-        new Chart(attendanceCtx, {
-            type: 'line',
-            data: {
-                labels: <%- JSON.stringify(attendanceData.map(d => new Date(d.date).toLocaleDateString())) %>,
-                datasets: [{
-                    label: 'Check-ins',
-                    data: <%- JSON.stringify(attendanceData.map(d => d.count)) %>,
-                    borderColor: 'rgba(40, 167, 69, 1)',
-                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                    fill: true,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
+        const attendanceCtx = document.getElementById('attendanceChart');
+        if (attendanceCtx) {
+            new Chart(attendanceCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: data.attendanceData.map(d => new Date(d.date).toLocaleDateString()),
+                    datasets: [{
+                        label: 'Check-ins',
+                        data: data.attendanceData.map(d => d.count),
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
     });
 </script>
 

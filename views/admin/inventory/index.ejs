@@ -20,7 +20,8 @@
         <div class="card bg-danger text-white shadow-sm border-0">
             <div class="card-body">
                 <h6 class="text-uppercase small mb-1">Needs Maintenance</h6>
-                <h2 class="mb-0 fw-bold"><%= inventory.filter(i => i.status === 'Needs Maintenance' || i.status === 'Damaged').length %></h2>
+                <% const needsMaintenanceCount = inventory.filter(i => i.status === 'Needs Maintenance' || i.status === 'Damaged').length; %>
+                <h2 class="mb-0 fw-bold"><%= needsMaintenanceCount %></h2>
             </div>
         </div>
     </div>

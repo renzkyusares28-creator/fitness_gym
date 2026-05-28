@@ -117,6 +117,7 @@
                                 <th>Member</th>
                                 <th>Program</th>
                                 <th>Category</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -126,11 +127,23 @@
                                         <td class="small fw-bold"><%= w.member_name %></td>
                                         <td class="small"><%= w.program_name %></td>
                                         <td><span class="badge bg-primary extra-small" style="font-size: 0.7rem;"><%= w.category %></span></td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button class="btn btn-sm btn-outline-primary py-0" data-bs-toggle="modal" data-bs-target="#editWorkoutModal<%= w.id %>">
+                                                    <i class="fas fa-edit small"></i>
+                                                </button>
+                                                <form action="/workouts/delete/<%= w.id %>" method="POST" onsubmit="return confirm('Are you sure?')" class="d-inline">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger py-0 border-start-0">
+                                                        <i class="fas fa-trash small"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
                                     </tr>
                                 <% }) %>
                             <% } else { %>
                                 <tr>
-                                    <td colspan="3" class="text-center py-3 text-muted small">No workouts assigned yet.</td>
+                                    <td colspan="4" class="text-center py-3 text-muted small">No workouts assigned yet.</td>
                                 </tr>
                             <% } %>
                         </tbody>
@@ -169,6 +182,56 @@
         </div>
     </div>
 </div>
+
+<% if (recentWorkouts.length > 0) { %>
+    <% recentWorkouts.forEach(w => { %>
+        <!-- Edit Workout Modal for Recent Workouts -->
+        <div class="modal fade" id="editWorkoutModal<%= w.id %>" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold">Edit Workout Program</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="/workouts/edit/<%= w.id %>" method="POST">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Select Member</label>
+                                <select name="member_id" class="form-select" required>
+                                    <% members.forEach(member => { %>
+                                        <option value="<%= member.id %>" <%= w.member_id === member.id ? 'selected' : '' %>><%= member.full_name %></option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                            <input type="hidden" name="assigned_by" value="<%= w.assigned_by %>">
+                            <div class="mb-3">
+                                <label class="form-label">Program Name</label>
+                                <input type="text" name="program_name" class="form-control" value="<%= w.program_name %>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Category</label>
+                                <select name="category" class="form-select" required>
+                                    <option value="Weight Loss" <%= w.category === 'Weight Loss' ? 'selected' : '' %>>Weight Loss</option>
+                                    <option value="Muscle Gain" <%= w.category === 'Muscle Gain' ? 'selected' : '' %>>Muscle Gain</option>
+                                    <option value="Cardio" <%= w.category === 'Cardio' ? 'selected' : '' %>>Cardio</option>
+                                    <option value="Strength Training" <%= w.category === 'Strength Training' ? 'selected' : '' %>>Strength Training</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Description / Exercises</label>
+                                <textarea name="description" class="form-control" rows="4" required><%= w.description %></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Update Program</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    <% }) %>
+<% } %>
 
 <style>
     .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }

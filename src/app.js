@@ -3,11 +3,19 @@ const session = require('express-session');
 const path = require('path');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const db = require('./config/db');
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir);
+    console.log('📁 Created uploads directory');
+}
 
 // Test database connection
 async function testConnection() {

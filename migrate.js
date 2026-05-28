@@ -6,7 +6,10 @@ async function migrate() {
 
         // Helper function to check if a column exists
         async function columnExists(table, column) {
-            const [rows] = await db.execute(`SHOW COLUMNS FROM ${table} LIKE ?`, [column]);
+            const [rows] = await db.execute(
+                "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ? AND COLUMN_NAME = ? AND TABLE_SCHEMA = DATABASE()",
+                [table, column]
+            );
             return rows.length > 0;
         }
 

@@ -60,7 +60,8 @@ router.get('/', isAuthenticated, async (req, res) => {
 
             // Fetch Recent Workouts
             const [recentWorkouts] = await db.execute(`
-                SELECT w.*, m.full_name as member_name, t.full_name as trainer_name 
+                SELECT w.id, w.program_name, w.category, w.description, w.member_id, w.assigned_by, w.created_at,
+                       m.full_name as member_name, t.full_name as trainer_name 
                 FROM workout_programs w 
                 JOIN members m ON w.member_id = m.id 
                 LEFT JOIN trainers t ON w.assigned_by = t.id 
@@ -108,7 +109,8 @@ router.get('/', isAuthenticated, async (req, res) => {
 
             // Fetch Recently Assigned Workouts by this Trainer
             const [recentWorkouts] = await db.execute(`
-                SELECT w.*, m.full_name as member_name 
+                SELECT w.id, w.program_name, w.category, w.description, w.member_id, w.assigned_by, w.created_at,
+                       m.full_name as member_name 
                 FROM workout_programs w 
                 JOIN members m ON w.member_id = m.id 
                 WHERE w.assigned_by = ? 
@@ -118,7 +120,18 @@ router.get('/', isAuthenticated, async (req, res) => {
             stats.assignedMembersCount = memberCount[0].count;
             stats.todaySessionsCount = todaySessionsCount[0].count;
             
-            res.render('trainer/dashboard', { stats, todaySessions, upcomingSessions, assignedMembers, recentWorkouts, page: 'dashboard' });
+            // Fetch Only Members assigned to this Trainer for Assign Workout Modal
+            const [members] = await db.execute(`
+                SELECT DISTINCT m.id, m.full_name 
+                FROM members m 
+                JOIN trainer_schedules s ON m.id = s.member_id 
+                WHERE s.trainer_id = ? AND m.status = 'Active'
+            `, [trainerId]);
+            
+            // Fetch All Trainers for Assign Workout Modal
+            const [trainers] = await db.execute("SELECT id, full_name FROM trainers");
+            
+            res.render('trainer/dashboard', { stats, todaySessions, upcomingSessions, assignedMembers, recentWorkouts, members, trainers, page: 'dashboard' });
         } else {
             // Fetch Member Stats
             const [member] = await db.execute('SELECT m.*, p.name as plan_name FROM members m LEFT JOIN membership_plans p ON m.membership_plan_id = p.id WHERE m.user_id = ?', [req.session.user.id]);
