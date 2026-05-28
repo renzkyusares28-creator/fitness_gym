@@ -31,7 +31,7 @@ exports.renderAddMember = async (req, res) => {
 };
 
 exports.addMember = async (req, res) => {
-    const { username, email, password, full_name, age, gender, address, contact_number, membership_plan_id } = req.body;
+    const { username, email, password, full_name, age, gender, address, contact_number, membership_plan_id, emergency_contact, medical_conditions, allergies } = req.body;
     const profile_picture = req.file ? `/uploads/${req.file.filename}` : null;
 
     const connection = await db.getConnection();
@@ -54,17 +54,24 @@ exports.addMember = async (req, res) => {
         const registrationDate = new Date().toISOString().split('T')[0];
         
         // Fetch plan duration to calculate expiry
-        const [plan] = await connection.execute('SELECT duration_months FROM membership_plans WHERE id = ?', [membership_plan_id]);
-        const months = plan.length > 0 ? plan[0].duration_months : 1;
+        let months = 1;
+        let planId = membership_plan_id || null;
+        
+        if (planId) {
+            const [plan] = await connection.execute('SELECT duration_months FROM membership_plans WHERE id = ?', [planId]);
+            if (plan.length > 0) {
+                months = plan[0].duration_months;
+            }
+        }
 
         const expiryDate = new Date();
         expiryDate.setMonth(expiryDate.getMonth() + months);
         const formattedExpiryDate = expiryDate.toISOString().split('T')[0];
 
         await connection.execute(
-            `INSERT INTO members (user_id, full_name, age, gender, address, contact_number, profile_picture, membership_plan_id, qr_code_data, registration_date, membership_expiry_date) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [userId, full_name, age, gender, address, contact_number, profile_picture, membership_plan_id, qrCodeImageUrl, registrationDate, formattedExpiryDate]
+            `INSERT INTO members (user_id, full_name, age, gender, address, contact_number, profile_picture, membership_plan_id, qr_code_data, registration_date, membership_expiry_date, emergency_contact, medical_conditions, allergies) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [userId, full_name, age, gender, address, contact_number, profile_picture, planId, qrCodeImageUrl, registrationDate, formattedExpiryDate, emergency_contact || null, medical_conditions || null, allergies || null]
         );
 
         await connection.commit();
@@ -73,7 +80,7 @@ exports.addMember = async (req, res) => {
 
     } catch (err) {
         await connection.rollback();
-        console.error(err);
+        console.error('Add Member Error:', err.message);
         req.session.error = "Error registering member: " + err.message;
         res.redirect('/members/add');
     } finally {
