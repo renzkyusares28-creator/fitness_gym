@@ -46,6 +46,9 @@ CREATE TABLE IF NOT EXISTS members (
     qr_code_data TEXT,
     registration_date DATE,
     membership_expiry_date DATE,
+    emergency_contact VARCHAR(100),
+    medical_conditions TEXT,
+    allergies TEXT,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (membership_plan_id) REFERENCES membership_plans(id)
 );
@@ -93,6 +96,7 @@ CREATE TABLE IF NOT EXISTS trainer_schedules (
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
     session_type VARCHAR(100),
+    status ENUM('Pending', 'Confirmed', 'Cancelled') DEFAULT 'Confirmed',
     FOREIGN KEY (trainer_id) REFERENCES trainers(id),
     FOREIGN KEY (member_id) REFERENCES members(id)
 );
@@ -110,10 +114,58 @@ CREATE TABLE IF NOT EXISTS workout_programs (
     FOREIGN KEY (assigned_by) REFERENCES trainers(id)
 );
 
--- QR Codes Table (Optional, if we want to store more details than just the data in members table)
-CREATE TABLE IF NOT EXISTS qr_codes (
+-- Trainer Reviews Table
+CREATE TABLE IF NOT EXISTS trainer_reviews (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    member_id INT UNIQUE,
-    qr_image_path VARCHAR(255),
+    trainer_id INT,
+    member_id INT,
+    rating INT CHECK (rating >= 1 AND rating <= 5),
+    review TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE CASCADE,
     FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE
+);
+
+-- Member Progress Table
+CREATE TABLE IF NOT EXISTS member_progress (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    member_id INT,
+    weight DECIMAL(5,2),
+    bmi DECIMAL(5,2),
+    body_fat_percentage DECIMAL(5,2),
+    chest_size DECIMAL(5,2),
+    arm_size DECIMAL(5,2),
+    calories_burned INT,
+    recorded_at DATE,
+    recorded_by INT,
+    FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE,
+    FOREIGN KEY (recorded_by) REFERENCES trainers(id)
+);
+
+-- Nutrition Plans Table
+CREATE TABLE IF NOT EXISTS nutrition_plans (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    member_id INT,
+    trainer_id INT,
+    breakfast_plan TEXT,
+    lunch_plan TEXT,
+    dinner_plan TEXT,
+    daily_calories_target INT,
+    protein_target_grams INT,
+    water_target_liters DECIMAL(3,1),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE,
+    FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE CASCADE
+);
+
+-- Gym Inventory Table
+CREATE TABLE IF NOT EXISTS gym_inventory (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    item_name VARCHAR(100) NOT NULL,
+    category VARCHAR(50),
+    quantity INT DEFAULT 1,
+    status ENUM('Good', 'Fair', 'Needs Maintenance', 'Damaged') DEFAULT 'Good',
+    last_maintenance_date DATE,
+    next_maintenance_date DATE,
+    notes TEXT
 );
