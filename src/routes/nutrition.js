@@ -27,7 +27,15 @@ router.get('/', isAuthenticated, async (req, res) => {
         // For trainer modal
         let members = [];
         if (req.session.user.role === 'Trainer') {
-            const [memberData] = await db.execute("SELECT id, full_name FROM members WHERE status = 'Active'");
+            const [trainer] = await db.execute('SELECT id FROM trainers WHERE user_id = ?', [req.session.user.id]);
+            const trainerId = trainer[0]?.id;
+
+            const [memberData] = await db.execute(`
+                SELECT DISTINCT m.id, m.full_name 
+                FROM members m 
+                JOIN trainer_schedules s ON m.id = s.member_id 
+                WHERE s.trainer_id = ? AND m.status = 'Active'
+            `, [trainerId]);
             members = memberData;
         }
 
@@ -44,6 +52,17 @@ router.post('/add', isTrainer, async (req, res) => {
     try {
         const [trainer] = await db.execute('SELECT id FROM trainers WHERE user_id = ?', [req.session.user.id]);
         const trainerId = trainer[0]?.id;
+
+        // Security check: Ensure member is assigned to this trainer
+        const [isAssigned] = await db.execute(
+            'SELECT 1 FROM trainer_schedules WHERE trainer_id = ? AND member_id = ? LIMIT 1',
+            [trainerId, member_id]
+        );
+
+        if (isAssigned.length === 0) {
+            req.session.error = "Unauthorized: This member is not assigned to you.";
+            return res.redirect('/nutrition');
+        }
 
         await db.execute(
             `INSERT INTO nutrition_plans (member_id, trainer_id, breakfast_plan, lunch_plan, dinner_plan, daily_calories_target, protein_target_grams, water_target_liters) 
