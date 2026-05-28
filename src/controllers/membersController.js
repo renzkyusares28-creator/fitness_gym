@@ -52,9 +52,13 @@ exports.addMember = async (req, res) => {
 
         // 3. Create Member
         const registrationDate = new Date().toISOString().split('T')[0];
-        // Calculate expiry based on plan (placeholder: 30 days)
+        
+        // Fetch plan duration to calculate expiry
+        const [plan] = await connection.execute('SELECT duration_months FROM membership_plans WHERE id = ?', [membership_plan_id]);
+        const months = plan.length > 0 ? plan[0].duration_months : 1;
+
         const expiryDate = new Date();
-        expiryDate.setDate(expiryDate.getDate() + 30);
+        expiryDate.setMonth(expiryDate.getMonth() + months);
         const formattedExpiryDate = expiryDate.toISOString().split('T')[0];
 
         await connection.execute(
@@ -204,13 +208,14 @@ exports.approveMember = async (req, res) => {
         await connection.execute('UPDATE users SET is_approved = 1 WHERE id = ?', [id]);
 
         // 2. Activate Member and set expiry date based on plan
-        const [member] = await connection.execute('SELECT m.id, p.duration_months FROM members m JOIN membership_plans p ON m.membership_plan_id = p.id WHERE m.user_id = ?', [id]);
+        const [member] = await connection.execute('SELECT m.id, p.duration_months FROM members m LEFT JOIN membership_plans p ON m.membership_plan_id = p.id WHERE m.user_id = ?', [id]);
         
         if (member.length > 0) {
             const { id: memberId, duration_months } = member[0];
+            const months = duration_months || 1; // Default to 1 month if plan not found or duration missing
             await connection.execute(
                 "UPDATE members SET status = 'Active', membership_expiry_date = DATE_ADD(CURRENT_DATE(), INTERVAL ? MONTH) WHERE id = ?",
-                [duration_months, memberId]
+                [months, memberId]
             );
         }
 
